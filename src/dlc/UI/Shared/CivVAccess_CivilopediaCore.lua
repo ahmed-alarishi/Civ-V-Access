@@ -83,7 +83,18 @@ local STAT_FRAMES = {
         label = "ProductionLabel",
         headerKey = "TXT_KEY_PEDIA_PRODUCTION_LABEL",
     },
-    { frame = "GreatPeopleFrame", label = "GreatPeopleLabel", headerKey = "TXT_KEY_PEDIA_GP_LABEL" },
+    -- The pedia overwrites GPTitle per building with the specialist's
+    -- GreatPeopleTitle ("Great Merchant Points:"), so the live title is the
+    -- header; the static key is only the XML default. With the type named
+    -- in the header, the value's trailing [ICON_GREAT_PEOPLE] would just
+    -- add "great people" after the number, so it's stripped.
+    {
+        frame = "GreatPeopleFrame",
+        label = "GreatPeopleLabel",
+        headerKey = "TXT_KEY_PEDIA_GP_LABEL",
+        headerLabel = "GPTitle",
+        stripIcons = true,
+    },
     { frame = "CombatFrame", label = "CombatLabel", headerKey = "TXT_KEY_PEDIA_COMBAT_LABEL" },
     {
         frame = "RangedCombatFrame",
@@ -458,12 +469,22 @@ end
 -- Resolve a def's headerKey to a speakable string via the Text wrapper
 -- (missing keys surface in Lua.log). Strips the trailing ":" that base-
 -- game TXT_KEY_PEDIA_*_LABEL values ship with so call sites can always
--- add their own ": " separator without doubling up.
+-- add their own ": " separator without doubling up. A def with headerLabel
+-- prefers that control's live text, falling back to headerKey when empty.
 local function headerFor(def)
-    if def.headerKey == nil or def.headerKey == "" then
-        return ""
+    local h
+    if def.headerLabel ~= nil then
+        local ctrl = Controls[def.headerLabel]
+        if ctrl ~= nil then
+            h = ctrl:GetText()
+        end
     end
-    local h = Text.key(def.headerKey)
+    if h == nil or h == "" then
+        if def.headerKey == nil or def.headerKey == "" then
+            return ""
+        end
+        h = Text.key(def.headerKey)
+    end
     if type(h) == "string" and h:sub(-1) == ":" then
         return h:sub(1, -2)
     end
@@ -834,7 +855,11 @@ end
 local function harvestStats(leaves)
     for _, def in ipairs(STAT_FRAMES) do
         if not ctrlHidden(Controls[def.frame]) then
-            addLeaf(leaves, headerFor(def), ctrlText(Controls[def.label]))
+            local body = ctrlText(Controls[def.label])
+            if def.stripIcons then
+                body = body:gsub("%s*%[ICON_[%w_]+%]", "")
+            end
+            addLeaf(leaves, headerFor(def), body)
         end
     end
 end
