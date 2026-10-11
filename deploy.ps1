@@ -63,7 +63,7 @@
 .PARAMETER LekModClone
     LekMod clone supplying the prebaked DLC for the lekmod state (both profiles
     install it). Defaults to the sibling directory next to this repo
-    (~/Documents/Lekmod).
+    (~/Documents/access-mods/civ-v/Lekmod).
 
 .PARAMETER SkipProxy
     Skip the proxy stack and the legacy lua51 rename (blind only).

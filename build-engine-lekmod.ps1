@@ -20,12 +20,12 @@
     directly -- it is already baked into CvGameDatabaseWin32.lib.
 
     Requires:
-      - The LekMod clone on its `civvaccess` branch (default: ~/Documents/Lekmod)
+      - The LekMod clone on its `civvaccess` branch (default: ~/Documents/access-mods/civ-v/Lekmod)
       - Windows SDK 7.0 + VC9 installed via build/sdk7-install/install.cmd
         (same toolchain as build-engine.ps1)
 
 .PARAMETER LekModRepo
-    Override the LekMod clone root. Defaults to the Lekmod checkout beside this repo, then ~/Documents/Lekmod.
+    Override the LekMod clone root. Defaults to the Lekmod checkout beside this repo, then ~/Documents/access-mods/civ-v/Lekmod.
 
 .PARAMETER Clean
     Delete build/engine-lekmod/ intermediates before building.
@@ -57,12 +57,12 @@ function Resolve-LekModProjDir {
     $candidates = @()
     if ($Explicit) { $candidates += $Explicit }
     $candidates += (Join-Path (Split-Path -Parent $repoRoot) 'Lekmod')
-    $candidates += (Join-Path $HOME 'Documents\Lekmod')
+    $candidates += (Join-Path $HOME 'Documents\access-mods\civ-v\Lekmod')
     foreach ($c in $candidates) {
         $proj = Join-Path $c "LEKMOD_DLL\$projectName"
         if (Test-Path (Join-Path $proj 'CvGameCoreDLL.def')) { return (Resolve-Path $proj).Path }
     }
-    throw "Could not find the LekMod DLL project. Clone https://github.com/EnormousApplePie/Lekmod beside this repo or to ~/Documents/Lekmod (and check out the civvaccess branch), or pass -LekModRepo."
+    throw "Could not find the LekMod DLL project. Clone https://github.com/EnormousApplePie/Lekmod beside this repo or to ~/Documents/access-mods/civ-v/Lekmod (and check out the civvaccess branch), or pass -LekModRepo."
 }
 
 function Assert-Toolchain {

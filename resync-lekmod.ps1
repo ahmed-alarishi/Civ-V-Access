@@ -7,7 +7,7 @@
 .DESCRIPTION
     The LekMod analog of resync-vp.ps1, lighter because LekMod has no CP/VP
     duality and no modpack bake (its prebaked DLC is used directly). The clone
-    at ~/Documents/Lekmod IS the LekMod repo: upstream content (LEKMOD/ DLC +
+    at ~/Documents/access-mods/civ-v/Lekmod IS the LekMod repo: upstream content (LEKMOD/ DLC +
     LEKMOD_DLL/ source) lives on `main`, and our engine additions ride a
     `civvaccess` branch on top. Two remotes: `origin` is our GitHub fork
     (rashadnaqeeb/Lekmod, where civvaccess is pushed) and `upstream` is the
@@ -79,7 +79,7 @@
 
 .PARAMETER ClonePath
     Path to the LekMod clone (fork branch civvaccess). Defaults to the sibling
-    directory next to this repo (~/Documents/Lekmod).
+    directory next to this repo (~/Documents/access-mods/civ-v/Lekmod).
 
 .PARAMETER ReviewConfirmed
     Required by the finish phase. Asserts you have read the drift report and the

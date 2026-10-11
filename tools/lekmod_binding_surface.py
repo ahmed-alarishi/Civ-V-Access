@@ -24,7 +24,7 @@ import os
 import re
 import sys
 
-DEFAULT_CLONE = os.path.expanduser("~/Documents/Lekmod")
+DEFAULT_CLONE = os.path.expanduser("~/Documents/access-mods/civ-v/Lekmod")
 DEFAULT_SDK = (
     "C:/Program Files (x86)/Steam/steamapps/common/"
     "Sid Meier's Civilization V SDK/CvGameCoreSource/CvGameCoreDLL_Expansion2"
