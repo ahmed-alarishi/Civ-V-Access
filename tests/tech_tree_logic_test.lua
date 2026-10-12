@@ -148,6 +148,7 @@ local function setup()
     CivVAccess_Strings["TXT_KEY_CIVVACCESS_TECHTREE_STATUS_RESEARCHED"] = "researched"
     CivVAccess_Strings["TXT_KEY_CIVVACCESS_TECHTREE_STATUS_AVAILABLE"] = "available"
     CivVAccess_Strings["TXT_KEY_CIVVACCESS_TECHTREE_STATUS_UNAVAILABLE"] = "prerequisites not met"
+    CivVAccess_Strings["TXT_KEY_CIVVACCESS_TECHTREE_STATUS_UNAVAILABLE_REQUIRES"] = "needs {1_Prereqs}"
     CivVAccess_Strings["TXT_KEY_CIVVACCESS_TECHTREE_STATUS_LOCKED"] = "locked"
     CivVAccess_Strings["TXT_KEY_CIVVACCESS_TECHTREE_QUEUE_CURRENT_TOKEN"] = "current"
     CivVAccess_Strings["TXT_KEY_CIVVACCESS_CHOOSETECH_STATUS_CURRENT"] = "currently researching"
@@ -329,6 +330,51 @@ function M.test_landing_zero_science_suppresses_turns()
     Teams = { [0] = fakeTeam() }
     local text = TechTreeLogic.buildLandingSpeech(1, Players[0])
     T.falsy(text:find("4 turns"), "zero science suppresses turns clause")
+end
+
+local function techsTwoParents()
+    -- Archery and Pottery both lead to Mining; Agriculture is Pottery's
+    -- parent, so it is a grandparent of Mining and must not be named there.
+    return {
+        tech(0, "TECH_AGRICULTURE", 1, "TXT_KEY_TECH_AGRICULTURE"),
+        tech(1, "TECH_POTTERY", 2, "TXT_KEY_TECH_POTTERY"),
+        tech(2, "TECH_ARCHERY", 3, "TXT_KEY_TECH_ARCHERY"),
+        tech(3, "TECH_MINING", 4, "TXT_KEY_TECH_MINING"),
+    }, {
+        { TechType = "TECH_POTTERY", PrereqTech = "TECH_AGRICULTURE" },
+        { TechType = "TECH_MINING", PrereqTech = "TECH_POTTERY" },
+        { TechType = "TECH_MINING", PrereqTech = "TECH_ARCHERY" },
+    }
+end
+
+function M.test_landing_unavailable_names_only_unresearched_direct_prereqs()
+    setup()
+    installTechDB(techsTwoParents())
+    Players = { [0] = fakePlayer() }
+    Teams = { [0] = fakeTeam({ researched = { [2] = true } }) }
+    local text = TechTreeLogic.buildLandingSpeech(3, Players[0])
+    T.truthy(text:find("needs TXT_KEY_TECH_POTTERY", 1, true), "unresearched parent named")
+    T.falsy(text:find("TXT_KEY_TECH_ARCHERY", 1, true), "researched parent omitted")
+    T.falsy(text:find("TXT_KEY_TECH_AGRICULTURE", 1, true), "grandparent omitted")
+    T.falsy(text:find("prerequisites not met", 1, true), "list replaces the bare token")
+end
+
+function M.test_landing_unavailable_lists_every_missing_parent_in_sections()
+    setup()
+    installTechDB(techsTwoParents())
+    Players = { [0] = fakePlayer() }
+    Teams = { [0] = fakeTeam() }
+    local s = TechTreeLogic.buildLandingSections(3, Players[0])
+    T.eq(s[2], "needs TXT_KEY_TECH_POTTERY, TXT_KEY_TECH_ARCHERY")
+end
+
+function M.test_landing_unavailable_with_all_parents_held_keeps_bare_token()
+    setup()
+    installTechDB(techsTwoParents())
+    Players = { [0] = fakePlayer() }
+    Teams = { [0] = fakeTeam({ researched = { [1] = true, [2] = true } }) }
+    local s = TechTreeLogic.buildLandingSections(3, Players[0])
+    T.eq(s[2], "prerequisites not met")
 end
 
 -- ===== buildLandingSections =====

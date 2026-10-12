@@ -2155,6 +2155,7 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_TECHTREE_SEARCH_RESULTS"] = "Resultados d
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_TECHTREE_STATUS_RESEARCHED"] = "investigada"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_TECHTREE_STATUS_AVAILABLE"] = "disponible"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_TECHTREE_STATUS_UNAVAILABLE"] = "requisitos previos no cumplidos"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_TECHTREE_STATUS_UNAVAILABLE_REQUIRES"] = "requiere {1_Prereqs}"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_TECHTREE_STATUS_LOCKED"] = "bloqueada"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_TECHTREE_QUEUE_EMPTY"] = "sin investigación actual, cola vacía"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_TECHTREE_QUEUE_CURRENT_TOKEN"] = "actual"

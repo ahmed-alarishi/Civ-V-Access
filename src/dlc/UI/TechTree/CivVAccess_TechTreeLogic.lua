@@ -86,6 +86,32 @@ function TechTreeLogic.statusKey(player, techID)
     return "TXT_KEY_CIVVACCESS_TECHTREE_STATUS_LOCKED"
 end
 
+-- Spoken status. "Prerequisites not met" names the direct prereqs the
+-- player's team still lacks; deeper ancestors are left to the user to walk
+-- up to, so the list stays short on late-game techs. Falls back to the bare
+-- token if every direct prereq is held (CanResearch failed for some other
+-- reason).
+local function statusText(player, techID, status)
+    if status ~= "TXT_KEY_CIVVACCESS_TECHTREE_STATUS_UNAVAILABLE" then
+        return Text.key(status)
+    end
+    local techType = GameInfo.Technologies[techID].Type
+    local teamTechs = Teams[player:GetTeam()]:GetTeamTechs()
+    local missing = {}
+    for row in GameInfo.Technology_PrereqTechs() do
+        if row.TechType == techType then
+            local prereq = GameInfo.Technologies[row.PrereqTech]
+            if prereq ~= nil and not teamTechs:HasTech(prereq.ID) then
+                missing[#missing + 1] = Text.key(prereq.Description)
+            end
+        end
+    end
+    if #missing == 0 then
+        return Text.key(status)
+    end
+    return Text.format("TXT_KEY_CIVVACCESS_TECHTREE_STATUS_UNAVAILABLE_REQUIRES", table.concat(missing, ", "))
+end
+
 -- Unlocks prose via the shared filterHelpText pipeline: converts
 -- [NEWLINE] section breaks to commas, strips markup, drops the
 -- upper-cased name prefix, and collapses dash-runs.
@@ -156,7 +182,7 @@ function TechTreeLogic.buildLandingSpeech(techID, player, stealingTargetID)
     local parts = { name }
 
     local status = TechTreeLogic.statusKey(player, techID)
-    parts[#parts + 1] = Text.key(status)
+    parts[#parts + 1] = statusText(player, techID, status)
 
     local queuePos = player:GetQueuePosition(techID)
     local isCurrent = (status == "TXT_KEY_CIVVACCESS_CHOOSETECH_STATUS_CURRENT")
@@ -197,7 +223,7 @@ function TechTreeLogic.buildLandingSections(techID, player, stealingTargetID)
     local sections = { name }
 
     local status = TechTreeLogic.statusKey(player, techID)
-    sections[#sections + 1] = Text.key(status)
+    sections[#sections + 1] = statusText(player, techID, status)
 
     local queuePos = player:GetQueuePosition(techID)
     local isCurrent = (status == "TXT_KEY_CIVVACCESS_CHOOSETECH_STATUS_CURRENT")
