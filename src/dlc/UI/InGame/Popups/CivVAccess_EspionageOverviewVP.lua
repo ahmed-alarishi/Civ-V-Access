@@ -213,7 +213,7 @@ local function buildChoiceItem(info, event, agent, city, isCounterspy, displayNa
 
     if not city:IsCityEventChoiceValidEspionage(info.ID, event.ID, agent.AgentID, activeID) then
         local reason
-        if isCounterspy then
+        if isCounterspy and info.ID == agent.SpyFocus then
             reason = Text.key("TXT_KEY_EO_COUNTERSPY_CANNOT_CHANGE_ACTIVE_FOCUS_TT")
         else
             reason = city:GetDisabledTooltip(info.ID, agent.AgentID, activeID)

@@ -15,9 +15,11 @@ New Features and improvements:
 - The city-state table in the diplomatic overview (F4) has a Protected By column listing every civilization pledged to protect each city-state.
 - During ranged attacks, air strikes, city bombards, and city-state gifts, the scanner has a Targets category whose entries move the cursor to each valid target.
 - In the tech tree, a tech whose prerequisites are not met names the direct prerequisites you still need.
+- Vox Populi and Community Patch support now tracks Vox Populi 5.4.7.
 
 Bug fixes:
 - Under Vox Populi, city bombard range checks use the city's actual strike range.
+- In the Vox Populi espionage screen, a counterspy's unavailable focus options now give the engine's real reason instead of always saying the active focus can't be changed.
 
 ## [2.3.6] - 2026-10-09
 
