@@ -11,6 +11,9 @@ start with `## [X.Y.Z] - YYYY-MM-DD` on its own line for the parser to find it.
 
 ## [Unreleased]
 
+New Features and improvements:
+- The city-state table in the diplomatic overview (F4) has a Protected By column listing every civilization pledged to protect each city-state.
+
 ## [2.3.6] - 2026-10-09
 
 New Features and improvements:

@@ -1665,6 +1665,10 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_TRAIT_PERSONALITY"] = "特性�
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_INFLUENCE"] = "影響力"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_ALLIED_WITH"] = "同盟對象"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_CONTENDER"] = "競爭者"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_PROTECTED_BY"] = "保護者"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_PROTECTORS_UNMET"] = {
+    other = "{1_N} 個未接觸文明",
+}
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_QUESTS"] = "委託"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_NEARBY"] = "附近資源"
 -- Empty-cell labels. "none" for absent items in a list-shaped cell;

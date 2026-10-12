@@ -2162,6 +2162,11 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_TRAIT_PERSONALITY"] = "trait et
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_INFLUENCE"] = "influence"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_ALLIED_WITH"] = "allié avec"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_CONTENDER"] = "prétendant"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_PROTECTED_BY"] = "protégée par"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_PROTECTORS_UNMET"] = {
+    one = "{1_N} civilisation inconnue",
+    other = "{1_N} civilisations inconnues",
+}
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_QUESTS"] = "quêtes"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_NEARBY"] = "ressources à proximité"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_NONE"] = "aucun"

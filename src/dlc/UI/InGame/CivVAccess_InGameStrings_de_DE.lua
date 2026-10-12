@@ -1846,6 +1846,11 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_THEY_ARE_VASSAL"] = {
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_VASSAL_OF"] = "Vasall von {1_Name}"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_HAS_VASSALS"] = "Vasallen: {1_List}"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_CONTENDER"] = "Anwärter"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_PROTECTED_BY"] = "geschützt von"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_PROTECTORS_UNMET"] = {
+    one = "{1_N} unbekannte Zivilisation",
+    other = "{1_N} unbekannte Zivilisationen",
+}
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_CONTENDER"] = "{1_Civ}, {2_Inf} Einfluss"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_CONTENDER_UNMET"] = "unbekannte Zivilisation, {1_Inf} Einfluss"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_OPINION_VERY_PLEASED"] = "sehr erfreut über: {1_List}"

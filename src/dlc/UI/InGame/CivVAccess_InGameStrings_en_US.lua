@@ -2651,6 +2651,8 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_INFLUENCE"] = "influence"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_ALLIED_WITH"] = "allied with"
 -- Contender column (Vox Populi only): the runner-up suitor to the ally.
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_CONTENDER"] = "contender"
+-- Protected-by column: every major with an active pledge to protect the CS.
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_PROTECTED_BY"] = "protected by"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_QUESTS"] = "quests"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_NEARBY"] = "nearby resources"
 -- Empty-cell labels. "none" for absent items in a list-shaped cell;
@@ -2683,6 +2685,12 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_ALLY_UNMET_DISPLACE"] = "unmet civi
 -- distinct from the "nobody" empty case.
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_CONTENDER"] = "{1_Civ}, {2_Inf} influence"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_CONTENDER_UNMET"] = "unmet civilization, {1_Inf} influence"
+-- Protected-by cell tail: pledged majors we haven't met, counted rather
+-- than named. Plural driven by {1_N}.
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_PROTECTORS_UNMET"] = {
+    one = "{1_N} unmet civilization",
+    other = "{1_N} unmet civilizations",
+}
 -- Trait-and-personality cell. Trait first, personality second, paired
 -- since trait determines what kind of bonus would flow and personality
 -- modifies how easily influence shifts.

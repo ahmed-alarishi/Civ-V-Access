@@ -1834,6 +1834,12 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_WONDERS"] = "cuda świata"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_SCORE"] = "punkty"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_DECLARE_WAR"] = "wypowiedz wojnę"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_CONTENDER"] = "pretendent dyplomatyczny"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_PROTECTED_BY"] = "chronione przez"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_PROTECTORS_UNMET"] = {
+    one = "{1_N} nieznana cywilizacja",
+    few = "{1_N} nieznane cywilizacje",
+    many = "{1_N} nieznanych cywilizacji",
+}
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_CONTENDER"] = "{1_Civ}, {2_Inf} wpływów"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_CONTENDER_UNMET"] = "{1_Points} pkt. pretendenta (nieznane cywilizacje)"
 -- Minor civ columns. _RELATIONSHIP carries the bonuses currently flowing

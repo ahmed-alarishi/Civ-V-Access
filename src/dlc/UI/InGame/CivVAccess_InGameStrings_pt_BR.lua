@@ -102,6 +102,11 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_THEY_ARE_VASSAL"] = {
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_VASSAL_OF"] = "vassalo de {1_Name}"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_HAS_VASSALS"] = "vassalos: {1_List}"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_CONTENDER"] = "concorrente"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_PROTECTED_BY"] = "protegida por"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_PROTECTORS_UNMET"] = {
+    one = "{1_N} civilização não encontrada",
+    other = "{1_N} civilizações não encontradas",
+}
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_CONTENDER"] = "{1_Civ}, {2_Inf} de influência"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_CONTENDER_UNMET"] = "civilização não encontrada, {1_Inf} de influência"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_UNIT_STATUS_QUEUED"] = "movimento na fila"

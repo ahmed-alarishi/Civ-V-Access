@@ -14,8 +14,8 @@
 --
 --   Minors  BaseTable. One row per met city-state. Columns left to right:
 --           Relationship (bonuses currently flowing), Trait and
---           personality, Influence, Allied with, Quests, Nearby
---           resources. Row label: CS name + engine status text +
+--           personality, Influence, Allied with, Contender (VP only),
+--           Protected by, Quests, Nearby resources. Row label: CS name + engine status text +
 --           bullyable suffix when not implied by status. Enter on any
 --           data cell opens BUTTONPOPUP_CITY_STATE_DIPLO.
 --
@@ -1025,6 +1025,51 @@ local function contenderCell(iOther)
     )
 end
 
+-- Majors with an active pledge to protect this CS. Same per-major pledge
+-- flag on vanilla, LekMod, and VP; the sighted game shows it in the Declare
+-- War popup's "Under protection of" list and, on VP, the CS popup's
+-- "Protected By" row.
+local function protectorIds(iOther)
+    local out = {}
+    for i = 0, GameDefines.MAX_MAJOR_CIVS - 1 do
+        local p = Players[i]
+        if p:IsAlive() and p:IsProtectingMinor(iOther) then
+            out[#out + 1] = i
+        end
+    end
+    return out
+end
+
+-- Protected-by cell: "you" first when we hold a pledge, then met protectors
+-- by name, then a count of unmet protectors (named like the Allied-with
+-- cell's unmet ally, never dropped), "nobody" when no major has pledged.
+local function protectedByCell(iOther)
+    local iUs = Game.GetActivePlayer()
+    local pUsTeam = Teams[Players[iUs]:GetTeam()]
+    local names = {}
+    local unmet = 0
+    if Players[iUs]:IsProtectingMinor(iOther) then
+        names[1] = Text.key("TXT_KEY_YOU")
+    end
+    for _, i in ipairs(protectorIds(iOther)) do
+        if i ~= iUs then
+            local p = Players[i]
+            if pUsTeam:IsHasMet(p:GetTeam()) then
+                names[#names + 1] = Text.key(p:GetCivilizationShortDescription())
+            else
+                unmet = unmet + 1
+            end
+        end
+    end
+    if unmet > 0 then
+        names[#names + 1] = Text.formatPlural("TXT_KEY_CIVVACCESS_DIPLO_PROTECTORS_UNMET", unmet, unmet)
+    end
+    if #names == 0 then
+        return Text.key("TXT_KEY_CIVVACCESS_DIPLO_NOBODY")
+    end
+    return table.concat(names, ", ")
+end
+
 -- Raw active-quest tooltip (the [NEWLINE]-delimited block of threatening-
 -- barbarians, proxy-war, and per-quest description / reward lines), or nil
 -- when there is nothing to show. Suppressed at war (matches base
@@ -1310,6 +1355,15 @@ local function buildMinorColumns()
             pediaName = minorCivPedia,
         }
     end
+    cols[#cols + 1] = {
+        name = "TXT_KEY_CIVVACCESS_DIPLO_COL_PROTECTED_BY",
+        getCell = protectedByCell,
+        sortKey = function(iOther)
+            return #protectorIds(iOther)
+        end,
+        enterAction = activateMinor,
+        pediaName = minorCivPedia,
+    }
     cols[#cols + 1] = {
         name = "TXT_KEY_CIVVACCESS_DIPLO_COL_QUESTS",
         getCell = questsCell,

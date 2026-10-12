@@ -1964,6 +1964,12 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_THEY_ARE_VASSAL"] = {
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_VASSAL_OF"] = "вассал {1_Name}"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_HAS_VASSALS"] = "вассалы: {1_List}"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_CONTENDER"] = "претендент"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_COL_PROTECTED_BY"] = "под защитой"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_PROTECTORS_UNMET"] = {
+    one = "{1_N} неизвестная цивилизация",
+    few = "{1_N} неизвестные цивилизации",
+    many = "{1_N} неизвестных цивилизаций",
+}
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_CONTENDER"] = "{1_Civ}, {2_Inf} влияния"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_CONTENDER_UNMET"] =
     "неизвестная цивилизация, {1_Inf} влияния"
