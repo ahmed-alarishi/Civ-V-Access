@@ -20,6 +20,7 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_SCANNER_CATEGORY_SPECIAL"] = "特殊"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_SCANNER_CATEGORY_RECOMMENDATIONS"] = "推奨"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_SCANNER_CATEGORY_WAYPOINTS"] = "中継点"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_SCANNER_CATEGORY_GEOGRAPHY"] = "地形"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_SCANNER_CATEGORY_TARGETS"] = "対象"
 
 -- ===== Subcategory labels without a clean game key =====
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_SCANNER_SUB_ALL"] = "全て"

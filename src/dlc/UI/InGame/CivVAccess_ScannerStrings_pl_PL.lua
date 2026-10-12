@@ -20,6 +20,7 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_SCANNER_CATEGORY_SPECIAL"] = "Specjalne"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_SCANNER_CATEGORY_RECOMMENDATIONS"] = "Rekomendacje"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_SCANNER_CATEGORY_WAYPOINTS"] = "Punkty trasy"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_SCANNER_CATEGORY_GEOGRAPHY"] = "Geografia"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_SCANNER_CATEGORY_TARGETS"] = "Cele"
 
 -- ===== Subcategory labels without a clean game key =====
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_SCANNER_SUB_ALL"] = "Wszystkie"

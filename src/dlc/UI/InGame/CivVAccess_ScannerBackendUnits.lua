@@ -232,6 +232,10 @@ local function unitItemName(unit, category, groupNamed)
     return typeForm
 end
 
+-- Shared with ScannerBackendTargets so a strike or gift target reads the
+-- same as that unit does in the units categories.
+ScannerBackendUnits.unitItemName = unitItemName
+
 -- Own trade units sit on plots the engine considers fogged because
 -- CvUnit::canChangeVisibility returns false on non-default map layers, so
 -- setXY skips changeAdjacentSight when the unit moves. Sighted players

@@ -78,6 +78,9 @@ local function newCategory(catDef)
         -- rather than sharing named-sub items into it. Carried through to
         -- placeEntry (share suppression) and sortSnapshot (sort key).
         resort = catDef.resort or false,
+        -- `autoMove` categories (targets) move the cursor on every landing
+        -- whatever the player's auto-move setting; read by ScannerNav.
+        autoMove = catDef.autoMove or false,
         subcategories = subs,
         _subsByKey = subsByKey,
     }

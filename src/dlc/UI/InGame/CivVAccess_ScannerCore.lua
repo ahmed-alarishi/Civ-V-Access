@@ -264,6 +264,25 @@ ScannerCore.CATEGORIES = {
         label = "TXT_KEY_CIVVACCESS_SCANNER_CATEGORY_WAYPOINTS",
         subcategories = {},
     },
+    {
+        -- Valid targets of the open map picker (unit ranged / air strike,
+        -- city bombard, gift unit, gift tile improvement), sourced from
+        -- TargetPlots. Picker-scoped: empty unless one of those pickers is
+        -- on the stack. Opening a picker does not move the scanner here;
+        -- the player cycles to it like any other category.
+        -- `autoMove` makes every landing in this category move the cursor
+        -- regardless of the auto-move setting, because Space and Enter act
+        -- on the cursor plot; without it each target would need a Home
+        -- press before it could be previewed or committed. Attack targets
+        -- split units from cities; gift targets emit into `all` directly.
+        key = "targets",
+        label = "TXT_KEY_CIVVACCESS_SCANNER_CATEGORY_TARGETS",
+        autoMove = true,
+        subcategories = {
+            { key = "units", label = "TXT_KEY_UNITS_HEADING1_TITLE" },
+            { key = "cities", label = "TXT_KEY_CITIES_HEADING1_TITLE" },
+        },
+    },
 }
 
 -- Lookup table for O(1) category-by-key access. Built at load time from

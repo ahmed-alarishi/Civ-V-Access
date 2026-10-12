@@ -138,12 +138,10 @@ local function targetabilityPrefix(plot)
         headCity = city
         attackerPlot = city:Plot()
         team = Players[city:GetOwner()]:GetTeam()
-        range = GameDefines.CITY_ATTACK_RANGE
-        -- Cities skip LoS when CAN_CITY_USE_INDIRECT_FIRE is set; BNW's
-        -- default flips it on (1) so any in-range visible plot is fair game,
-        -- base / G&K leave it off (0) and need the Bresenham. Read at
-        -- runtime so a mod-tweaked GlobalDefines value flows through.
-        ignoresLoS = (GameDefines.CAN_CITY_USE_INDIRECT_FIRE or 0) ~= 0
+        -- Range and indirect fire come from the seam: GlobalDefines on
+        -- vanilla / LekMod, per-city on VP (buildings and policies extend
+        -- both there).
+        range, ignoresLoS = EngineData.cityStrikeRange(city)
     else
         return ""
     end

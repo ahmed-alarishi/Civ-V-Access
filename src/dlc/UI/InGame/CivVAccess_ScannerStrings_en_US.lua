@@ -43,6 +43,7 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_SCANNER_CATEGORY_SPECIAL"] = "Special"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_SCANNER_CATEGORY_RECOMMENDATIONS"] = "Recommendations"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_SCANNER_CATEGORY_WAYPOINTS"] = "Waypoints"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_SCANNER_CATEGORY_GEOGRAPHY"] = "Geography"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_SCANNER_CATEGORY_TARGETS"] = "Targets"
 -- The city-site rec name lives in InGameStrings_en_US because both the
 -- scanner and the cursor glance reference it; keeping it here would hide
 -- it from the offline test harness, which only loads InGameStrings.

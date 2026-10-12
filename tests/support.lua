@@ -624,6 +624,14 @@ function T.installMap(plots)
         end
         return nil
     end
+    -- Offset lookup bounded by the same Chebyshev distance PlotDistance
+    -- uses above, so range loops and distance checks agree on this map.
+    Map.PlotXYWithRangeCheck = function(x, y, dx, dy, range)
+        if math.max(math.abs(dx), math.abs(dy)) > range then
+            return nil
+        end
+        return Map.GetPlot(x + dx, y + dy)
+    end
 end
 
 -- Install the UI / OptionsManager globals that the recommendations

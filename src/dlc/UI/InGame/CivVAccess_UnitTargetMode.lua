@@ -1272,6 +1272,7 @@ function UnitTargetMode.enter(actor, iAction, mode)
     -- but an external popAbove / popByName could still unwind us.
     self.onDeactivate = function()
         _currentActorID = nil
+        TargetPlots.finish()
         restoreSelection()
     end
     self.onActivate = function()
@@ -1279,6 +1280,17 @@ function UnitTargetMode.enter(actor, iAction, mode)
     end
     if HandlerStack.push(self) then
         _currentActorID = actor:GetID()
+        -- Ranged and air strikes have a short target list; publish it to
+        -- the scanner's targets category. Move / melee / the other verbs
+        -- have none.
+        if isRangeAttackMode(mode) then
+            TargetPlots.begin({
+                kind = TargetPlots.KIND_UNIT_RANGED,
+                mode = mode,
+                ownerID = actor:GetOwner(),
+                unitID = actor:GetID(),
+            })
+        end
     else
         -- Refused (another picker is already active). The action-menu commit
         -- that called us already set the engine into the target interface

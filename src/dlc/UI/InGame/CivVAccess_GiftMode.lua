@@ -45,78 +45,12 @@ local function cursorPlot()
     return Map.GetPlot(cx, cy), cx, cy
 end
 
--- Find the active player's first unit on `plot`. Mirrors InGame.lua
--- GiftUnit's loop (it overwrites on each match, so the last own-unit on
--- the plot wins -- matching the engine's pick).
-local function firstOwnUnit(plot)
-    if plot == nil then
-        return nil
-    end
-    local activePlayer = Game.GetActivePlayer()
-    local pUnit = nil
-    for i = 0, plot:GetNumUnits() - 1 do
-        local pFoundUnit = plot:GetUnit(i)
-        if pFoundUnit ~= nil and pFoundUnit:GetOwner() == activePlayer then
-            pUnit = pFoundUnit
-        end
-    end
-    return pUnit
-end
-
 local function canGiftImprovementAtPlot(x, y, toPlayerID)
     local pToPlayer = Players[toPlayerID]
     if pToPlayer == nil then
         return false
     end
     return pToPlayer:CanMajorGiftTileImprovementAtPlot(Game.GetActivePlayer(), x, y)
-end
-
--- Initial landing target. Convenience-only -- nil result is fine; cursor
--- stays where the user was and they roam manually. For unit, walks the
--- player's unit list to find the first one CanDistanceGift accepts. For
--- improvement, expands rings out from the city-state's capital up to
--- MINOR_CIV_RESOURCE_SEARCH_RADIUS, the same box HighlightImprovableCity-
--- StatePlots scans (InGame.lua:709), so the first hit is spatially close
--- to the city.
-local function findFirstUnitTarget(toPlayerID)
-    local activePlayer = Players[Game.GetActivePlayer()]
-    if activePlayer == nil then
-        return nil, nil
-    end
-    for unit in activePlayer:Units() do
-        if unit:CanDistanceGift(toPlayerID) then
-            return unit:GetX(), unit:GetY()
-        end
-    end
-    return nil, nil
-end
-
-local function findFirstImprovementTarget(toPlayerID)
-    local pToPlayer = Players[toPlayerID]
-    if pToPlayer == nil then
-        return nil, nil
-    end
-    local capital = pToPlayer:GetCapitalCity()
-    if capital == nil then
-        return nil, nil
-    end
-    local cx, cy = capital:GetX(), capital:GetY()
-    local iFromPlayer = Game.GetActivePlayer()
-    local iRange = GameDefines["MINOR_CIV_RESOURCE_SEARCH_RADIUS"] or 5
-    for r = 1, iRange do
-        for dx = -r, r do
-            for dy = -r, r do
-                local plot = Map.PlotXYWithRangeCheck(cx, cy, dx, dy, r)
-                if plot ~= nil then
-                    local px, py = plot:GetX(), plot:GetY()
-                    if pToPlayer:CanMajorGiftTileImprovementAtPlot(iFromPlayer, px, py) then
-                        return px, py
-                    end
-                end
-            end
-        end
-    end
-    return nil, nil
 end
 
 -- Per-plot Space preview. PlotComposers.legalityPreview returns
@@ -149,7 +83,7 @@ local function commitUnit(toPlayerID)
         speakInterrupt(Text.key("TXT_KEY_CIVVACCESS_UNIT_PREVIEW_GIFT_UNIT_ILLEGAL"))
         return false
     end
-    local unit = firstOwnUnit(plot)
+    local unit = TargetPlots.giftUnitAt(plot)
     if unit == nil or not unit:CanDistanceGift(toPlayerID) then
         speakInterrupt(Text.key("TXT_KEY_CIVVACCESS_UNIT_PREVIEW_GIFT_UNIT_ILLEGAL"))
         return false
@@ -222,7 +156,9 @@ function GiftMode.enter(toPlayerID, kind)
     local previewFn
     local commitFn
     local modeWordKey
-    local jumpFn
+    -- Drives both the entry landing (nearest valid target to the
+    -- city-state's capital) and the scanner's targets category.
+    local targetScope
     local recipient = recipientName(toPlayerID)
     if kind == KIND_UNIT then
         previewFn = function()
@@ -230,11 +166,11 @@ function GiftMode.enter(toPlayerID, kind)
             if plot == nil then
                 return ""
             end
-            -- Single firstOwnUnit lookup drives both the legality gate and
+            -- Single giftUnitAt lookup drives both the legality gate and
             -- the legal-text unit name. nil is the "no own unit on this
             -- plot" case (cursor moved off the giftable unit) and routes
             -- straight to the illegal branch.
-            local unit = firstOwnUnit(plot)
+            local unit = TargetPlots.giftUnitAt(plot)
             local legal = unit ~= nil and unit:CanDistanceGift(toPlayerID)
             local legalText
             if legal then
@@ -248,9 +184,11 @@ function GiftMode.enter(toPlayerID, kind)
             end
         end
         modeWordKey = "TXT_KEY_CIVVACCESS_GIFT_UNIT_MODE"
-        jumpFn = function()
-            return findFirstUnitTarget(toPlayerID)
-        end
+        targetScope = {
+            kind = TargetPlots.KIND_GIFT_UNIT,
+            mode = InterfaceModeTypes.INTERFACEMODE_GIFT_UNIT,
+            toPlayerID = toPlayerID,
+        }
     else
         previewFn = function()
             local plot, cx, cy = cursorPlot()
@@ -278,9 +216,11 @@ function GiftMode.enter(toPlayerID, kind)
             end
         end
         modeWordKey = "TXT_KEY_CIVVACCESS_GIFT_IMPROVEMENT_MODE"
-        jumpFn = function()
-            return findFirstImprovementTarget(toPlayerID)
-        end
+        targetScope = {
+            kind = TargetPlots.KIND_GIFT_IMPROVEMENT,
+            mode = InterfaceModeTypes.INTERFACEMODE_GIFT_TILE_IMPROVEMENT,
+            toPlayerID = toPlayerID,
+        }
     end
 
     self.bindings = {
@@ -319,19 +259,23 @@ function GiftMode.enter(toPlayerID, kind)
     }
     self.onActivate = function()
         speakInterrupt(Text.key(modeWordKey))
-        local jx, jy = jumpFn()
-        if jx ~= nil then
-            local tileSpeech = Cursor.jumpTo(jx, jy)
+        -- Convenience landing only; nil leaves the cursor where it was.
+        local target = TargetPlots.nearest(targetScope)
+        if target ~= nil then
+            local tileSpeech = Cursor.jumpTo(target:GetX(), target:GetY())
             if tileSpeech ~= nil and tileSpeech ~= "" then
                 SpeechPipeline.speakQueued(tileSpeech)
             end
         end
     end
     self.onDeactivate = function()
+        TargetPlots.finish()
         UI.SetInterfaceMode(InterfaceModeTypes.INTERFACEMODE_SELECTION)
     end
 
-    if not HandlerStack.push(self) then
+    if HandlerStack.push(self) then
+        TargetPlots.begin(targetScope)
+    else
         abandonEntry()
     end
 end

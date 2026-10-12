@@ -143,6 +143,8 @@ InterfaceModeTypes = InterfaceModeTypes
         INTERFACEMODE_DISEMBARK = 13,
         INTERFACEMODE_NUKE = 14,
         INTERFACEMODE_AIR_SWEEP = 15,
+        INTERFACEMODE_GIFT_UNIT = 16,
+        INTERFACEMODE_GIFT_TILE_IMPROVEMENT = 17,
     }
 
 Events = Events or {

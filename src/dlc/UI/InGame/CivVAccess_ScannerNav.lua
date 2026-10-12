@@ -122,6 +122,18 @@ local function isSearchSnapshot()
     return _snapshot ~= nil and _snapshot.isSearch == true
 end
 
+-- Whether landings move the cursor: the player's auto-move toggle, or a
+-- category that forces it (targets, whose Space / Enter act on the cursor
+-- plot). Read per landing so the forced behavior stays inside that one
+-- category.
+local function autoMoveActive()
+    if civvaccess_shared.scannerAutoMove then
+        return true
+    end
+    local cat = currentCategory()
+    return cat ~= nil and cat.autoMove == true
+end
+
 -- Index of the category carrying `key` in the current snapshot, or nil.
 -- Custom categories are prepended to the snapshot, so adding or removing one
 -- from F12 settings while the scanner is open renumbers every real
@@ -442,7 +454,8 @@ end
 -- swordsmen and this is the closest. The scanner carves out an exception
 -- to the rule for that reason.
 --
--- Distance origin depends on the auto-move toggle:
+-- Distance origin depends on whether auto-move is in effect (the toggle,
+-- or a category that forces it -- see autoMoveActive):
 --   * auto-move ON  -- snapshot origin. Each cycle warps the cursor onto
 --                      the entry; a live-cursor formatter would then say
 --                      "here" on every subsequent cycle. Anchoring to the
@@ -461,7 +474,7 @@ end
 -- speech announces from; otherwise the spoken bearing and the audio
 -- bearing could drift apart on auto-move boundary cases.
 local function readoutOrigin()
-    if civvaccess_shared.scannerAutoMove then
+    if autoMoveActive() then
         return _snapshot.cursorX, _snapshot.cursorY
     end
     local cx, cy = Cursor.position()
@@ -573,13 +586,14 @@ local function announceWithLabel(node)
 end
 
 -- Auto-move side-effect shared by every cycle. Jumps the cursor to the
--- current instance's plot when the toggle is on. The jump is silent --
+-- current instance's plot when auto-move is in effect (the toggle, or a
+-- forcing category; see autoMoveActive). The jump is silent --
 -- the cycle's own announcement already speaks the entry and distance,
 -- and saying the plot glance on top would double the audio. Explicit
 -- Home speaks the glance because it has no cycle announcement covering
 -- for it.
 local function autoMoveIfEnabled()
-    if not civvaccess_shared.scannerAutoMove then
+    if not autoMoveActive() then
         return
     end
     local inst = currentInstance()

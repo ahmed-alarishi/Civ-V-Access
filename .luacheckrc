@@ -178,7 +178,9 @@ globals = {
     "ScannerBackendRecommendations",
     "ScannerBackendResources", "ScannerBackendSpecial", "ScannerBackendTerrain",
     "ScannerBackendUnits", "ScannerBackendWaypoints", "ScannerBackendWorkedTiles",
-    "ScannerBackendYields",
+    "ScannerBackendYields", "ScannerBackendTargets",
+    -- Valid-target lists shared by the map pickers and the targets backend.
+    "TargetPlots",
     "SurveyorCore",
     "CitySpeech",
     "CityRangeStrikeMode",

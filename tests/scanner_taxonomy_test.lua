@@ -46,6 +46,7 @@ function M.test_category_order_fixed()
         "terrain",
         "geography",
         "waypoints",
+        "targets",
     }
     local actual = catKeys()
     T.eq(#actual, #expected)

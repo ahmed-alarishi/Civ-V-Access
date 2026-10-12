@@ -64,13 +64,13 @@ local function strikeFailureReason(city, plot, tx, ty)
     end
     local team = Players[city:GetOwner()]:GetTeam()
     local cityX, cityY = city:GetX(), city:GetY()
-    if Map.PlotDistance(cityX, cityY, tx, ty) > GameDefines.CITY_ATTACK_RANGE then
+    local range, indirectFireOn = EngineData.cityStrikeRange(city)
+    if Map.PlotDistance(cityX, cityY, tx, ty) > range then
         return Text.key("TXT_KEY_CIVVACCESS_UNIT_PREVIEW_OUT_OF_RANGE")
     end
     if not plot:IsVisible(team, Game.IsDebugMode()) then
         return Text.key("TXT_KEY_CIVVACCESS_TARGET_UNSEEN")
     end
-    local indirectFireOn = (GameDefines.CAN_CITY_USE_INDIRECT_FIRE or 0) ~= 0
     if not indirectFireOn and not EngineData.hasLineOfSight(city:Plot(), plot, team) then
         return Text.key("TXT_KEY_CIVVACCESS_TARGET_UNSEEN")
     end
@@ -94,30 +94,6 @@ local function targetAnnouncement(city, plot, x, y)
         return Text.key("TXT_KEY_CIVVACCESS_CITY_RANGED_CANNOT_STRIKE")
     end
     return CitySpeech.rangedPreview(city, unit, nil)
-end
-
--- Initial landing target: first plot inside the city's max strike range
--- (3 hexes covers policy-bumped cities; CanRangeStrikeAt filters the rest).
--- Iterates by expanding ring so the first match is spatially close to the
--- city rather than whatever the iteration order would otherwise pick.
--- Convenience-only -- nil result is fine, the cursor just stays where the
--- user was and they can roam to find a target on their own.
-local function findFirstTarget(city)
-    local cx, cy = city:GetX(), city:GetY()
-    for r = 1, 3 do
-        for dx = -r, r do
-            for dy = -r, r do
-                local plot = Map.PlotXYWithRangeCheck(cx, cy, dx, dy, r)
-                if plot ~= nil then
-                    local px, py = plot:GetX(), plot:GetY()
-                    if city:CanRangeStrikeAt(px, py) then
-                        return plot
-                    end
-                end
-            end
-        end
-    end
-    return nil
 end
 
 -- Abandon-entry path. Called on any bail before the handler is on the
@@ -145,13 +121,18 @@ function CityRangeStrikeMode.enter(city)
     local ownerID = city:GetOwner()
     local cityID = city:GetID()
 
-    -- Convenience landing: jump cursor to a nearby valid target on entry
+    -- Convenience landing: jump cursor to the nearest valid target on entry
     -- so the user starts on something they can fire at. CanRangeStrikeNow
-    -- guarantees at least one target exists; findFirstTarget may still
-    -- miss it if the city's range exceeds our 3-hex search box (modded
-    -- ranges, etc.), in which case the cursor stays put and the user
-    -- navigates manually.
-    local initialTarget = findFirstTarget(city)
+    -- guarantees at least one target exists; a nil result (the engine's
+    -- answer moved between the two calls) just leaves the cursor put. The
+    -- same scope fills the scanner's targets category once the push lands.
+    local targetScope = {
+        kind = TargetPlots.KIND_CITY_RANGED,
+        mode = InterfaceModeTypes.INTERFACEMODE_CITY_RANGE_ATTACK,
+        ownerID = ownerID,
+        cityID = cityID,
+    }
+    local initialTarget = TargetPlots.nearest(targetScope)
 
     local self = {
         name = "CityRangeStrike",
@@ -257,6 +238,7 @@ function CityRangeStrikeMode.enter(city)
     end
 
     self.onDeactivate = function()
+        TargetPlots.finish()
         UI.ClearSelectedCities()
         -- Return to SELECTION so the engine exits CITY_RANGE_ATTACK. Esc,
         -- commit, and any external pop all land here.
@@ -264,7 +246,9 @@ function CityRangeStrikeMode.enter(city)
     end
 
     local pushed = HandlerStack.push(self)
-    if not pushed then
+    if pushed then
+        TargetPlots.begin(targetScope)
+    else
         abandonEntry()
     end
 end

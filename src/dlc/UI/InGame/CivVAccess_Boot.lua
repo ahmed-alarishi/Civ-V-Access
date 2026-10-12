@@ -93,6 +93,10 @@ include("CivVAccess_CursorPedia")
 -- preview + commit failure messages). Depends on HexGeom (already loaded
 -- above) plus engine globals; no Context state.
 include("CivVAccess_PathDiagnostic")
+-- Valid-target lists for the pickers below and the scanner's targets
+-- category. Its UnitControl reference is call-time only, so it can sit
+-- ahead of UnitControlCore.
+include("CivVAccess_TargetPlots")
 include("CivVAccess_UnitTargetMode")
 include("CivVAccess_CityRangeStrikeMode")
 include("CivVAccess_GiftMode")
@@ -143,6 +147,7 @@ include("CivVAccess_ScannerBackendTerrain")
 include("CivVAccess_ScannerBackendGeography")
 include("CivVAccess_ScannerBackendRecommendations")
 include("CivVAccess_ScannerBackendWaypoints")
+include("CivVAccess_ScannerBackendTargets")
 include("CivVAccess_ScannerSnap")
 include("CivVAccess_ScannerSearch")
 include("CivVAccess_ScannerInput")

@@ -13,6 +13,10 @@ start with `## [X.Y.Z] - YYYY-MM-DD` on its own line for the parser to find it.
 
 New Features and improvements:
 - The city-state table in the diplomatic overview (F4) has a Protected By column listing every civilization pledged to protect each city-state.
+- During ranged attacks, air strikes, city bombards, and city-state gifts, the scanner has a Targets category whose entries move the cursor to each valid target.
+
+Bug fixes:
+- Under Vox Populi, city bombard range checks use the city's actual strike range.
 
 ## [2.3.6] - 2026-10-09
 

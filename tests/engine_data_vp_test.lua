@@ -1176,6 +1176,26 @@ function M.test_vp_best_defender_positional_args_and_potential_enemy_contract()
     T.eq(seen, nil, "potential-enemy queries must not reach the engine on VP")
 end
 
+function M.test_vp_city_strike_range_reads_the_city_and_converts_indirect_fire()
+    -- VP's range is per city (buildings and policies extend it), unlike the
+    -- vanilla GlobalDefines read; the binding returns indirect fire as 0/1,
+    -- and a bare 0 would read as true in Lua if passed through unconverted.
+    local vp = loadSeam(VP_PATH)
+    local city = {
+        GetBombardRange = function()
+            return 3, 0
+        end,
+    }
+    local range, indirect = vp.cityStrikeRange(city)
+    T.eq(range, 3)
+    T.eq(indirect, false)
+    city.GetBombardRange = function()
+        return 2, 1
+    end
+    local _, indirect2 = vp.cityStrikeRange(city)
+    T.eq(indirect2, true)
+end
+
 -- Player stub for happinessSummary: engine-state getters plus the
 -- citizen-needs surface, all overridable per test.
 local function summaryPlayer(opts)

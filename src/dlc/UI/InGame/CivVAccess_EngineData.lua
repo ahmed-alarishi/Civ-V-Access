@@ -571,6 +571,14 @@ function EngineData.bestDefender(plot, attackingPlayer, attacker, opts)
     )
 end
 
+-- A city's ranged-strike reach: (range in hexes, whether it fires without
+-- line of sight). This engine reads both from GlobalDefines for every city
+-- (CvCity::canRangeStrikeAt reads CITY_ATTACK_RANGE and
+-- CAN_CITY_USE_INDIRECT_FIRE directly); VP computes them per city.
+function EngineData.cityStrikeRange(_city)
+    return GameDefines.CITY_ATTACK_RANGE, (GameDefines.CAN_CITY_USE_INDIRECT_FIRE or 0) ~= 0
+end
+
 -- Pathfinder intents: the seam vocabulary for path relaxations. Callers
 -- pass named intents ({ declareWar = true }, ...) and the translation to
 -- this engine's flag bits happens here, so no engine bit mask crosses
