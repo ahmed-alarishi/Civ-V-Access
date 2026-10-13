@@ -11,6 +11,8 @@ start with `## [X.Y.Z] - YYYY-MM-DD` on its own line for the parser to find it.
 
 ## [Unreleased]
 
+## [2.3.8] - 2026-10-13
+
 Bug fixes:
 - Great person actions in the Tab menu now say what you'd get, like a Great Scientist's science or a Great Merchant's gold.
 
