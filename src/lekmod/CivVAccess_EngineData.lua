@@ -362,6 +362,29 @@ function EngineData.cityGoldenAgePerTurn(city)
     return city:GetYieldRate(YieldTypes.YIELD_GOLDEN_AGE_POINTS)
 end
 
+-- Great person mission results (see the vanilla file for the contracts).
+-- LekMod ships no UnitPanel override, so its mission tooltips are the BNW
+-- panel's and every body here is the vanilla one.
+function EngineData.goldenAgeMissionAmount(unit)
+    return unit:GetGoldenAgeTurns()
+end
+
+function EngineData.tourismBlastTurns(_unit)
+    return 0
+end
+
+function EngineData.tradeMissionExtras(_unit)
+    return nil
+end
+
+function EngineData.removeHeresyResult(_unit)
+    return nil
+end
+
+function EngineData.freeLuxuryGrant(_unit)
+    return nil
+end
+
 -- Extension reads for LekMod's MP "soft prompts" -- a pending proposal vote or
 -- an incoming deal that LekMod surfaces on the end-turn button. The engine
 -- raises no end-turn blocker for these, so our Turn module consults the seam

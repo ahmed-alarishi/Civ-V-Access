@@ -268,6 +268,45 @@ function EngineData.cityGoldenAgePerTurn(_city)
     return nil
 end
 
+-- Great person mission results: the engine-divergent pieces of the result
+-- block UnitPanel.lua prints in a mission button's tooltip, consumed by the
+-- Tab action menu. The amounts every engine reads the same way (discover,
+-- hurry, trade gold / influence, treatise culture, concert tourism) are read
+-- by the menu directly; only these differ.
+
+-- Drift read: the number the golden-age mission's help text fills into its
+-- {1_Num}. Vanilla fills in the golden age's length in turns.
+function EngineData.goldenAgeMissionAmount(unit)
+    return unit:GetGoldenAgeTurns()
+end
+
+-- Drift read: turns of tourism bonus a Concert Tour grants when it grants
+-- no flat tourism. Vanilla's concert tour is always a flat blast, so 0.
+function EngineData.tourismBlastTurns(_unit)
+    return 0
+end
+
+-- Drift read: what a trade mission grants beyond the influence and gold the
+-- menu reads itself. Nil when the engine adds nothing (vanilla); otherwise
+-- { restingInfluence, wltkdTurns, resources = { { resourceID, amount } } }
+-- (see the VP body).
+function EngineData.tradeMissionExtras(_unit)
+    return nil
+end
+
+-- Drift read: (followers, majority religion id) after an inquisitor's Remove
+-- Heresy, or nil when the engine shows no outcome. Vanilla has no such
+-- mission.
+function EngineData.removeHeresyResult(_unit)
+    return nil
+end
+
+-- Drift read: (resource id, copies) a Great Admiral's free-luxury mission
+-- would grant, or nil when there is none. Vanilla has no such mission.
+function EngineData.freeLuxuryGrant(_unit)
+    return nil
+end
+
 -- LekMod MP "soft prompt" intents -- a pending proposal vote / incoming deal
 -- on the end-turn button (see the LekMod file). Vanilla has no MP voting
 -- system, so the reads report nothing pending and the opens are no-ops; the

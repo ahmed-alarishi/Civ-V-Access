@@ -255,6 +255,89 @@ function EngineData.cityGoldenAgePerTurn(_city)
     return nil
 end
 
+-- Great person mission results (see the vanilla file for the contracts).
+-- Every divergence below is in VP's own UnitPanel.lua TipHandler, not the
+-- Community Patch one, so each is gated on the VP balance mode; a
+-- Community-Patch-only session gets the vanilla answers its panel shows.
+
+-- VP's golden-age mission grants golden age points rather than starting a
+-- golden age, and VP rewrites the help text around "+{1_Num} Golden Age
+-- Points".
+function EngineData.goldenAgeMissionAmount(unit)
+    if balanceVP() then
+        return unit:GetGAPAmount()
+    end
+    return unit:GetGoldenAgeTurns()
+end
+
+function EngineData.tourismBlastTurns(unit)
+    if not balanceVP() then
+        return 0
+    end
+    return unit:GetTourismBlastLength()
+end
+
+-- VP's trade mission also moves the city-state's resting influence, can
+-- grant We Love the King Day turns (scaled by owned improvements and game
+-- speed, as VP's panel computes it, and shown only beside a gold grant), and
+-- can hand out resource copies. Mirrors VP UnitPanel.lua's MISSION_TRADE
+-- branch.
+function EngineData.tradeMissionExtras(unit)
+    if not balanceVP() then
+        return nil
+    end
+    local extras = { restingInfluence = unit:GetRestingPointChange(), wltkdTurns = 0, resources = {} }
+    local unitInfo = GameInfo.Units[unit:GetUnitType()]
+    if unitInfo == nil then
+        return extras
+    end
+    if unit:GetTradeGold(unit:GetPlot()) ~= 0 and (unitInfo.BaseWLTKDTurns or 0) > 0 then
+        local turns = unitInfo.BaseWLTKDTurns
+        local pActivePlayer = Players[Game.GetActivePlayer()]
+        local speedFactor = GameInfo.GameSpeeds[Game.GetGameSpeedType()].InstantYieldPercent / 100
+        for row in GameInfo.Unit_ScalingFromOwnedImprovements() do
+            if row.UnitType == unitInfo.Type then
+                local owned = pActivePlayer:GetImprovementCount(GameInfo.Improvements[row.ImprovementType].ID)
+                turns = turns * (1 + owned * row.Amount / 100) * speedFactor
+            end
+        end
+        extras.wltkdTurns = math.floor(turns)
+    end
+    for row in GameInfo.Unit_ResourceQuantityExpended() do
+        if row.UnitType == unitInfo.Type then
+            local resource = GameInfo.Resources[row.ResourceType]
+            if resource ~= nil then
+                extras.resources[#extras.resources + 1] = { resourceID = resource.ID, amount = row.Amount }
+            end
+        end
+    end
+    return extras
+end
+
+function EngineData.removeHeresyResult(unit)
+    if not balanceVP() then
+        return nil
+    end
+    return unit:GetNumFollowersAfterInquisitor(), unit:GetMajorityReligionAfterInquisitor()
+end
+
+-- CreateFreeLuxuryCheck only picks the resource (the grant itself is the
+-- mission); VP's own panel calls it on every hover.
+function EngineData.freeLuxuryGrant(unit)
+    if not balanceVP() then
+        return nil
+    end
+    local copies = unit:CreateFreeLuxuryCheckCopy()
+    if copies <= 0 then
+        return nil
+    end
+    local resourceID = unit:CreateFreeLuxuryCheck()
+    if resourceID == -1 then
+        return nil
+    end
+    return resourceID, copies
+end
+
 -- LekMod MP "soft prompt" intents -- a pending proposal vote / incoming deal
 -- on the end-turn button (see the LekMod file). VP has no MP voting system, so
 -- the reads report nothing pending and the opens are no-ops; the Turn module's

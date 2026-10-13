@@ -1871,4 +1871,99 @@ function M.test_cost_breakdowns_absent_on_engines_without_the_bindings()
     T.eq(vanilla.policyCostChanges({}), nil, "no policy cost changes on vanilla")
 end
 
+-- Great person mission results. VP's own UnitPanel diverges from the
+-- Community Patch one, so every read is gated on balance mode: CP-only must
+-- fall back to the vanilla answers its panel shows.
+function M.test_vp_golden_age_mission_amount_gated_on_balance_mode()
+    local vp, env = loadSeam(VP_PATH)
+    local balanceOn = false
+    env.Game = {
+        IsCustomModOption = function(opt)
+            return opt == "BALANCE_VP" and balanceOn
+        end,
+    }
+    local unit = {
+        GetGoldenAgeTurns = function()
+            return 8
+        end,
+        GetGAPAmount = function()
+            return 640
+        end,
+    }
+    T.eq(vp.goldenAgeMissionAmount(unit), 8, "golden age turns with VP balance off")
+    balanceOn = true
+    T.eq(vp.goldenAgeMissionAmount(unit), 640, "golden age points with VP balance on")
+end
+
+-- Pins VP UnitPanel's WLTKD formula (base turns scaled per owned improvement
+-- and by game speed, floored), its nesting under a nonzero gold grant, and
+-- the per-unit resource rows.
+function M.test_vp_trade_mission_extras_scale_wltkd_and_list_resources()
+    local vp, env = loadVPWithBalance()
+    env.Game.GetActivePlayer = function()
+        return 0
+    end
+    env.Game.GetGameSpeedType = function()
+        return 1
+    end
+    env.Players = {
+        [0] = {
+            GetImprovementCount = function(_, id)
+                return id == 7 and 3 or 0
+            end,
+        },
+    }
+    local function rows(list)
+        return function()
+            local i = 0
+            return function()
+                i = i + 1
+                return list[i]
+            end
+        end
+    end
+    env.GameInfo = {
+        Units = { [4] = { Type = "UNIT_MERCHANT_VENICE", BaseWLTKDTurns = 10 } },
+        GameSpeeds = { [1] = { InstantYieldPercent = 150 } },
+        Improvements = { IMPROVEMENT_CUSTOMS_HOUSE = { ID = 7 } },
+        Resources = { RESOURCE_SALT = { ID = 12 } },
+        Unit_ScalingFromOwnedImprovements = rows({
+            { UnitType = "UNIT_MERCHANT_VENICE", ImprovementType = "IMPROVEMENT_CUSTOMS_HOUSE", Amount = 10 },
+            { UnitType = "UNIT_OTHER", ImprovementType = "IMPROVEMENT_CUSTOMS_HOUSE", Amount = 99 },
+        }),
+        Unit_ResourceQuantityExpended = rows({
+            { UnitType = "UNIT_MERCHANT_VENICE", ResourceType = "RESOURCE_SALT", Amount = 2 },
+        }),
+    }
+    local gold = 300
+    local unit = {
+        GetUnitType = function()
+            return 4
+        end,
+        GetPlot = function()
+            return {}
+        end,
+        GetTradeGold = function()
+            return gold
+        end,
+        GetRestingPointChange = function()
+            return 15
+        end,
+    }
+    local extras = vp.tradeMissionExtras(unit)
+    T.eq(extras.restingInfluence, 15)
+    -- 10 * (1 + 3 * 10 / 100) * 1.5 = 19.5, floored.
+    T.eq(extras.wltkdTurns, 19)
+    T.eq(#extras.resources, 1)
+    T.eq(extras.resources[1].resourceID, 12)
+    T.eq(extras.resources[1].amount, 2)
+
+    gold = 0
+    T.eq(vp.tradeMissionExtras(unit).wltkdTurns, 0, "no WLTKD line without a gold grant")
+
+    env.Game.IsCustomModOption = function()
+        return false
+    end
+    T.eq(vp.tradeMissionExtras(unit), nil, "Community-Patch-only adds nothing")
+end
 return M

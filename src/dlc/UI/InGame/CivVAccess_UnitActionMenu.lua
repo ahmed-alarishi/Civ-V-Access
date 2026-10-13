@@ -538,6 +538,190 @@ local function upgradeTooltip(unit)
     return table.concat(parts, ". ")
 end
 
+-- Signed amount followed by what it counts ("+500 [ICON_RESEARCH]"), the
+-- shape UnitPanel.lua prints in a mission's result block. The icon filter
+-- speaks the token as its yield word.
+local function signedAmount(n, what)
+    return "+" .. n .. " " .. what
+end
+
+-- Follower count and majority-religion outcome of a conversion, as
+-- UnitPanel.lua prints them under Spread Religion (and VP's Remove Heresy).
+local function religionResult(unit, followers, majority)
+    local parts = {
+        Text.format(
+            "TXT_KEY_MISSION_SPREAD_RELIGION_RESULT",
+            Text.key(Game.GetReligionName(unit:GetReligion())),
+            followers
+        ),
+    }
+    if majority < ReligionTypes.RELIGION_PANTHEON then
+        parts[2] = Text.key("TXT_KEY_MISSION_MAJORITY_RELIGION_NONE")
+    else
+        parts[2] = Text.format("TXT_KEY_MISSION_MAJORITY_RELIGION", Text.key(Game.GetReligionName(majority)))
+    end
+    return parts
+end
+
+-- Missions whose help text needs a live value filled in or swapped for a
+-- unit-specific variant, mirroring the head of UnitPanel.lua TipHandler's
+-- mission branches (lines 1122-1184). Missions.Help for the golden-age
+-- mission carries an unfilled {1_Num}, so the static fallback would read
+-- with the number missing.
+local HELP_OVERRIDES = {
+    MISSION_GOLDEN_AGE = function(unit)
+        return Text.format("TXT_KEY_MISSION_START_GOLDENAGE_HELP", EngineData.goldenAgeMissionAmount(unit))
+    end,
+    MISSION_ALERT = function(unit, action)
+        if not unit:IsEverFortifyable() then
+            return Text.key("TXT_KEY_MISSION_ALERT_NO_FORTIFY_HELP")
+        end
+        return staticHelpText(action)
+    end,
+    INTERFACEMODE_PARADROP = function(unit)
+        return Text.format("TXT_KEY_INTERFACEMODE_PARADROP_HELP_WITH_RANGE", unit:GetDropRange())
+    end,
+}
+
+-- Result lines UnitPanel.lua TipHandler (lines 1147-1310) appends after a
+-- mission's help on an enabled button: what a great person's one-shot
+-- yields right now, a conversion's outcome, where a great work lands, a
+-- disband's scrap gold. Top-level menu entries are already gated on
+-- CanHandleAction, so these are always the enabled-button branches. Zero
+-- amounts are skipped, as VP's panel does. Engine-divergent reads go
+-- through EngineData.
+local MISSION_RESULTS = {
+    MISSION_DISCOVER = function(unit)
+        return { signedAmount(unit:GetDiscoverAmount(), "[ICON_RESEARCH]") }
+    end,
+    MISSION_HURRY = function(unit)
+        return { signedAmount(unit:GetHurryProduction(unit:GetPlot()), "[ICON_PRODUCTION]") }
+    end,
+    MISSION_GIVE_POLICIES = function(unit)
+        return { signedAmount(unit:GetGivePoliciesCulture(), "[ICON_CULTURE]") }
+    end,
+    MISSION_ONE_SHOT_TOURISM = function(unit)
+        local tourism = unit:GetBlastTourism()
+        if tourism > 0 then
+            return { signedAmount(tourism, "[ICON_TOURISM]") }
+        end
+        local turns = EngineData.tourismBlastTurns(unit)
+        if turns > 0 then
+            return { signedAmount(turns, Text.key("TXT_KEY_TURNS")) }
+        end
+        return {}
+    end,
+    MISSION_TRADE = function(unit)
+        local plot = unit:GetPlot()
+        local extras = EngineData.tradeMissionExtras(unit)
+        local lines = {}
+        local influence = unit:GetTradeInfluence(plot)
+        if influence ~= 0 then
+            lines[#lines + 1] = signedAmount(influence, "[ICON_INFLUENCE]")
+        end
+        if extras ~= nil and extras.restingInfluence ~= 0 then
+            lines[#lines + 1] = signedAmount(extras.restingInfluence, Text.key("TXT_KEY_VP_RESTING_INFLUENCE"))
+        end
+        local gold = unit:GetTradeGold(plot)
+        if gold ~= 0 then
+            lines[#lines + 1] = signedAmount(gold, "[ICON_GOLD]")
+        end
+        if extras ~= nil then
+            if extras.wltkdTurns > 0 then
+                lines[#lines + 1] = signedAmount(
+                    extras.wltkdTurns,
+                    Text.key("TXT_KEY_TURNS")
+                        .. " "
+                        .. Text.format("TXT_KEY_PLOTROLL_EMBASSY", "")
+                        .. Text.key("TXT_KEY_FOOD_WELOVEKING_HEADING3_TITLE")
+                )
+            end
+            for _, grant in ipairs(extras.resources) do
+                local resource = GameInfo.Resources[grant.resourceID]
+                if resource ~= nil then
+                    lines[#lines + 1] = signedAmount(grant.amount, Text.key(resource.Description))
+                end
+            end
+        end
+        return lines
+    end,
+    MISSION_SELL_EXOTIC_GOODS = function(unit)
+        return {
+            signedAmount(unit:GetExoticGoodsGoldAmount(), "[ICON_GOLD]"),
+            Text.format("TXT_KEY_EXPERIENCE_POPUP", unit:GetExoticGoodsXPAmount()),
+        }
+    end,
+    MISSION_SPREAD_RELIGION = function(unit)
+        return religionResult(unit, unit:GetNumFollowersAfterSpread(), unit:GetMajorityReligionAfterSpread())
+    end,
+    MISSION_REMOVE_HERESY = function(unit)
+        local followers, majority = EngineData.removeHeresyResult(unit)
+        if followers == nil then
+            return {}
+        end
+        return religionResult(unit, followers, majority)
+    end,
+    MISSION_FREE_LUXURY = function(unit)
+        local resourceID, copies = EngineData.freeLuxuryGrant(unit)
+        local resource = resourceID ~= nil and GameInfo.Resources[resourceID] or nil
+        if resource == nil then
+            return {}
+        end
+        return { signedAmount(copies, Text.key(resource.Description)) }
+    end,
+    MISSION_CREATE_GREAT_WORK = function(unit)
+        local pActivePlayer = Players[Game.GetActivePlayer()]
+        local eSlotType = unit:GetGreatWorkSlotType()
+        local building =
+            GameInfo.Buildings[pActivePlayer:GetBuildingOfClosestGreatWorkSlot(unit:GetX(), unit:GetY(), eSlotType)]
+        local city = pActivePlayer:GetCityOfClosestGreatWorkSlot(unit:GetX(), unit:GetY(), eSlotType)
+        if building == nil or city == nil then
+            return {}
+        end
+        return {
+            Text.format("TXT_KEY_MISSION_CREATE_GREAT_WORK_RESULT", Text.key(building.Description), city:GetName()),
+        }
+    end,
+    COMMAND_DELETE = function(unit)
+        local iGold = unit:GetScrapGold()
+        if iGold > 0 then
+            return { Text.format("TXT_KEY_SCRAP_HELP", iGold) }
+        end
+        return {}
+    end,
+}
+
+-- Tooltip for a top-level (non-build, non-promotion) action: the help text
+-- plus any live result lines, so the Tab menu carries the same numbers a
+-- sighted player reads hovering the button. Re-queried at announce time per
+-- the "never cache game state" rule.
+local function actionTooltip(unit, action)
+    if action.Type == "COMMAND_UPGRADE" then
+        return upgradeTooltip(unit)
+    end
+    local parts = {}
+    local override = HELP_OVERRIDES[action.Type]
+    local help
+    if override ~= nil then
+        help = override(unit, action)
+    else
+        help = staticHelpText(action)
+    end
+    if help ~= nil then
+        parts[1] = help
+    end
+    local results = MISSION_RESULTS[action.Type]
+    if results ~= nil then
+        for _, line in ipairs(results(unit)) do
+            parts[#parts + 1] = line
+        end
+    end
+    if #parts == 0 then
+        return nil
+    end
+    return table.concat(parts, ". ")
+end
+
 -- Reason a visible build is currently disabled, mirroring the named cases
 -- UnitPanel.lua's TipHandler reports (lines 1327-1498) so blind players
 -- read the same blocked-reason set sighted players see in the grayed-out
@@ -889,7 +1073,7 @@ local function buildTopLevelItems(unit, buckets)
             items[#items + 1] = BaseMenuItems.Choice({
                 labelText = label,
                 tooltipFn = function()
-                    return staticHelpText(action)
+                    return actionTooltip(unit, action)
                 end,
                 activate = function()
                     submenuOpener(unit, action, iAction, label)
@@ -907,7 +1091,7 @@ local function buildTopLevelItems(unit, buckets)
             items[#items + 1] = BaseMenuItems.Group({
                 labelText = label,
                 tooltipFn = function()
-                    return staticHelpText(action)
+                    return actionTooltip(unit, action)
                 end,
                 cached = false,
                 itemsFn = function()
@@ -918,7 +1102,7 @@ local function buildTopLevelItems(unit, buckets)
             items[#items + 1] = BaseMenuItems.Choice({
                 labelText = label,
                 tooltipFn = function()
-                    return staticHelpText(action)
+                    return actionTooltip(unit, action)
                 end,
                 activate = function()
                     HandlerStack.removeByName("UnitActionMenu", false)
@@ -926,16 +1110,10 @@ local function buildTopLevelItems(unit, buckets)
                 end,
             })
         else
-            -- COMMAND_UPGRADE swaps the useless static "Upgrade the unit."
-            -- help for the live target / gold / blocker breakdown.
-            local isUpgrade = action.Type == "COMMAND_UPGRADE"
             items[#items + 1] = BaseMenuItems.Choice({
                 labelText = label,
                 tooltipFn = function()
-                    if isUpgrade then
-                        return upgradeTooltip(unit)
-                    end
-                    return staticHelpText(action)
+                    return actionTooltip(unit, action)
                 end,
                 activate = function()
                     commitSelfPlot(action, { iAction = iAction })
