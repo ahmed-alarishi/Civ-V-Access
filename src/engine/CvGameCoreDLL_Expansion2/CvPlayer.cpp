@@ -11244,7 +11244,13 @@ int CvPlayer::GetUnhappinessFromCityForUI(CvCity* pCity) const
 	}
 
 	// Occupied?
-	if(pCity->IsOccupied() && !pCity->IsIgnoreCityForHappiness())
+	// CIVVACCESS: also honor the Courthouse exemption. A Courthouse never
+	// clears m_bOccupied; it sets the NoOccupiedUnhappiness count, which the
+	// empire totals (GetUnhappinessFromCityCount and siblings) check. Vanilla
+	// left it out here, so the per-city figure (HappinessInfo's city list,
+	// our city-screen and Economic Overview readouts) kept charging the
+	// occupied rate after a Courthouse. UI-only; no gameplay state reads this.
+	if(pCity->IsOccupied() && !pCity->IsNoOccupiedUnhappiness() && !pCity->IsIgnoreCityForHappiness())
 	{
 		iNumCitiesUnhappinessTimes100 += (100 * /*5*/ GC.getUNHAPPINESS_PER_CAPTURED_CITY());
 		iPopulationUnhappinessTimes100 += int(iPopulation* /*1.34f*/ GC.getUNHAPPINESS_PER_OCCUPIED_POPULATION());
