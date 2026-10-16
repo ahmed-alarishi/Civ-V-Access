@@ -718,13 +718,24 @@ function M.test_economy_barren_tile_speaks_no_yield()
     )
 end
 
-function M.test_economy_reports_working_city_on_fogged_revealed_tile()
+function M.test_economy_reports_working_city_on_visible_tile()
+    setup()
+    local city = T.fakeCity({ name = "Rome" })
+    local p = T.fakePlot({ revealed = true, visible = true, workingCity = city })
+    T.truthy(PlotComposers.economy(p):find("Rome", 1, true), "working city should be announced on visible tiles")
+end
+
+function M.test_economy_hides_working_city_on_fogged_tile()
+    -- GetWorkingCity is live state: on a tile whose borders grew after the
+    -- player last saw it, it names the new owner's city while
+    -- GetRevealedOwner still says unowned. The fogged path must speak only
+    -- the revealed owner.
     setup()
     local city = T.fakeCity({ name = "Rome" })
     local fogged = T.fakePlot({ revealed = true, visible = false, workingCity = city })
     T.truthy(
-        PlotComposers.economy(fogged):find("Rome", 1, true),
-        "working city should be announced on fogged revealed tiles (matches base)"
+        not PlotComposers.economy(fogged):find("Rome", 1, true),
+        "working city must not leak the live owner on fogged tiles"
     )
 end
 

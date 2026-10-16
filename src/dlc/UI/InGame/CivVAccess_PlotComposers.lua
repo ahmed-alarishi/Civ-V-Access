@@ -112,15 +112,17 @@ local function readBuildProgress(plot, out)
     end
 end
 
--- Yields, worker builds, and working city all read live state; the engine
--- exposes no GetRevealedX variants. Base game's plot tooltip
--- (PlotHelpManager.lua) shows all of them on any IsRevealed plot without
--- an IsVisible gate, so a fogged tile reports current yields / current
--- worker turns / current working city -- possibly stale relative to what
--- the player last saw. Match the engine's exposure rather than gate
--- tighter: the game treats this as the player's view of "what they
--- remember," and our speech output should surface the same facts a
--- sighted player would see in the tooltip.
+-- Yields and worker builds read live state; the engine exposes no
+-- GetRevealedX variants. Base game's plot tooltip (PlotHelpManager.lua)
+-- shows them on any IsRevealed plot without an IsVisible gate, so we match
+-- that exposure on fogged tiles.
+--
+-- Working city is different: the tooltip never shows it, and its owner
+-- names the plot's live owner. On a fogged tile whose borders changed since
+-- the player last saw it, that would contradict GetRevealedOwner and leak
+-- the new owner. Gate it on IsVisible; fogged tiles fall through to the
+-- revealed-owner territory line. Own territory is always visible, so the
+-- player's own tiles still name their city.
 function PlotComposers.economy(plot, opts)
     opts = opts or {}
     local team, debug = Game.GetActiveTeam(), Game.IsDebugMode()
@@ -132,7 +134,10 @@ function PlotComposers.economy(plot, opts)
     if plot:IsFreshWater() then
         out[#out + 1] = Text.key("TXT_KEY_CIVVACCESS_FRESH_WATER")
     end
-    local workingCity = plot:GetWorkingCity()
+    local workingCity = nil
+    if plot:IsVisible(team, debug) then
+        workingCity = plot:GetWorkingCity()
+    end
     if workingCity ~= nil then
         -- In CityView's hex sub the caller knows which city the user is
         -- managing, so the city name in "controlled by X" is noise unless X

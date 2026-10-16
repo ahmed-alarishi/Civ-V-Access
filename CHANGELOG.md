@@ -13,6 +13,7 @@ start with `## [X.Y.Z] - YYYY-MM-DD` on its own line for the parser to find it.
 
 Bug fixes:
 - An occupied city with a Courthouse no longer shows the occupation penalty in its own unhappiness number. Your empire total was already right; only the per-city figure on the city screen and in the Economic Overview was wrong.
+- Reading a tile's economy with W in fog of war no longer reveals which city controls it now; it reports the owner you last saw.
 
 ## [2.3.8] - 2026-10-13
 
