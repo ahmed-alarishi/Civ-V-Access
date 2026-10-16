@@ -263,12 +263,21 @@ def vanilla_roots(game_dir):
     return [
         dir_root("BNW", os.path.join(assets, "DLC", "Expansion2", "UI")),
         dir_root("base", os.path.join(assets, "UI")),
+        # The American Civil War scenario's mod folder, consulted only for
+        # stems that ship nowhere in BNW or base: its setup screen, the Custom
+        # entry point ScenariosMenu loads from the mod folder by path. The
+        # scenario's own TextPopup copy resolves to BNW or base first, so this
+        # root changes no existing override.
+        mod_root(
+            "CivilWarScenario",
+            os.path.join(assets, "DLC", "Expansion2", "Scenarios", "CivilWarScenario"),
+        ),
         # Shared-DLC UI, lowest precedence: consulted only for stems that
         # exist nowhere in BNW or base (e.g. ChangeSmtpPassword, the pitboss
         # SMTP-password modal, which ships only under DLC/Shared). Placed last
         # so it never changes how an existing override resolves -- resolve_source
         # returns the first root that ships a stem, and every other override's
-        # stem is found in BNW or base before this root is reached.
+        # stem is found in an earlier root before this one is reached.
         dir_root("shared", os.path.join(assets, "DLC", "Shared", "UI")),
     ]
 

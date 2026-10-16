@@ -185,6 +185,15 @@
       "suffix": "\r\n\r\ninclude(\"CivVAccess_PremiumContentMenuAccess\")\r\n"
     },
     "FrontEnd/PremiumContentMenu.xml": {},
+    "FrontEnd/Scenarios/CivilWarScenarioLoadScreen.lua": {
+      "suffix": "\r\n-- Civ V Access accessibility mod bootstrap.\r\ninclude(\"CivVAccess_ScenarioSetupAccess\")\r\n",
+      "edits": [
+        {
+          "old": "\t\tcontrolTable.Button:RegisterCallback(Mouse.eLClick, function() DifficultySelected(controlTable, info.ID); end);\r\n",
+          "new": "\t\tcontrolTable.Button:RegisterCallback(Mouse.eLClick, function() DifficultySelected(controlTable, info.ID); end);\r\n\t\t-- CivVAccess: promote each difficulty entry so the access layer can select it\r\n\t\t-- the way a click does; DifficultySelected needs the entry to move the highlight.\r\n\t\tg_CivVAccessDifficultyButtons = g_CivVAccessDifficultyButtons or {};\r\n\t\tg_CivVAccessDifficultyButtons[info.ID] = controlTable;\r\n"
+        }
+      ]
+    },
     "FrontEnd/ScenariosMenu.lua": {
       "suffix": "\r\n-- Civ V Access accessibility mod bootstrap.\r\ninclude(\"CivVAccess_ScenariosMenuAccess\")\r\n"
     },

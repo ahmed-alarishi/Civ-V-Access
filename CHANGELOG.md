@@ -11,6 +11,9 @@ start with `## [X.Y.Z] - YYYY-MM-DD` on its own line for the parser to find it.
 
 ## [Unreleased]
 
+New Features and improvements:
+- The American Civil War scenario is playable from the Scenarios menu, including choosing your side and difficulty.
+
 ## [2.3.9] - 2026-10-19
 
 New Features and improvements:

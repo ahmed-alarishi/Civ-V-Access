@@ -37,6 +37,7 @@ src/dlc/UI/FrontEnd/ToolTips.lua
 src/dlc/UI/FrontEnd/GameSetup/
 src/dlc/UI/FrontEnd/Modding/
 src/dlc/UI/FrontEnd/Multiplayer/
+src/dlc/UI/FrontEnd/Scenarios/
 
 # Base-game in-game screens and their bootstrap copies
 src/dlc/UI/InGame/TaskList.lua
