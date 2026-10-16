@@ -177,6 +177,12 @@ include("CivVAccess_NotificationAnnounce")
 -- on vanilla / VP. Loads after MessageBuffer (it appends) and
 -- NotificationAnnounce (sibling announcer).
 include("CivVAccess_LekModAlertAnnounce")
+-- ShadowedTextPopupAnnounce opens a dismiss menu for text popups shadowed by a
+-- mod's own TextPopup.lua (the restyled Firaxis scenarios), staying out of the
+-- way while TextPopupAccess owns the popup. Loads after MessageBuffer (it
+-- appends) and after RewardReview, which reviews the menu's message.
+include("CivVAccess_RewardReview")
+include("CivVAccess_ShadowedTextPopupAnnounce")
 -- MP-only fallback: networked multiplayer suppresses three reward popups
 -- engine-side, so the standard *PopupAccess wrappers don't fire. This
 -- module routes those three events to speech via engine fork hooks
@@ -404,6 +410,7 @@ local function onInGameBoot()
     HotseatMessageBuffer.installListeners()
     NotificationAnnounce.install()
     LekModAlertAnnounce.install()
+    ShadowedTextPopupAnnounce.install()
     MultiplayerRewards.installListeners()
     MultiplayerTurnEnd.installListeners()
     MPEndTurnReminder.installListeners()

@@ -25,3 +25,11 @@ BaseMenu.install(ContextPtr, {
         }),
     },
 })
+
+-- Tells ShadowedTextPopupAnnounce this hook owns text popups for this game.
+-- The probe reads false once this Context's env is wiped, and is never
+-- published when a mod's own TextPopup.lua shadows ours and keeps this file
+-- from loading.
+civvaccess_shared.textPopupHookProbe = function()
+    return BaseMenu ~= nil
+end

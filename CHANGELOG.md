@@ -11,6 +11,9 @@ start with `## [X.Y.Z] - YYYY-MM-DD` on its own line for the parser to find it.
 
 ## [Unreleased]
 
+New Features and improvements:
+- Scenario event messages, like the Civil War's random events, open like other popups and stay in the message buffer.
+
 ## [2.3.9] - 2026-10-19
 
 New Features and improvements:
