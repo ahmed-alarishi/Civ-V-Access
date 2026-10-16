@@ -11,6 +11,9 @@ start with `## [X.Y.Z] - YYYY-MM-DD` on its own line for the parser to find it.
 
 ## [Unreleased]
 
+New Features and improvements:
+- In scenarios with a turn limit, T also says how many turns remain.
+
 ## [2.3.9] - 2026-10-19
 
 New Features and improvements:

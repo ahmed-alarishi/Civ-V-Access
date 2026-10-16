@@ -2002,6 +2002,12 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_TURN_TIMER_SECONDS"] = {
 }
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_TURN_TIMER_LEFT"] = "{1_Time} left"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_TURN_TIMER_LEFT_TWO"] = "{1_Large} {2_Small} left"
+-- Turn line clause in a World Builder scenario with a turn limit: the count the
+-- scenario's own on-screen counter shows.
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_SCENARIO_TURNS_REMAINING"] = {
+    one = "{1_Turns} turn remaining",
+    other = "{1_Turns} turns remaining",
+}
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_STATUS_LUXURY_INVENTORY_ITEM"] = "{1_Name} {2_Count}"
 -- Section labels for Shift+letter detail readouts. Inserted as
 -- "{Label}: " between sections by newDetail.compose() at transitions

@@ -271,6 +271,25 @@ if Game.IsOption == nil then
         return false
     end
 end
+-- Turn limit and scenario state read by the turn line's scenario clause.
+-- Defaults describe an ordinary game: no turn limit, no World Builder scenario
+-- loaded; scenario suites overwrite them.
+if Game.GetMaxTurns == nil then
+    Game.GetMaxTurns = function()
+        return 0
+    end
+end
+if Game.GetEstimateEndTurn == nil then
+    Game.GetEstimateEndTurn = function()
+        return 0
+    end
+end
+PreGame = PreGame or {}
+if PreGame.GetLoadWBScenario == nil then
+    PreGame.GetLoadWBScenario = function()
+        return false
+    end
+end
 
 -- GameOptionTypes enum. Only the options mod code branches on are listed.
 -- Numeric values are placeholders -- production compares against the engine's
