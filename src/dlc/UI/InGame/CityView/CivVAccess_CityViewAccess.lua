@@ -567,14 +567,16 @@ local function pushWorkerFocus()
         items[#items + 1] = item
     end
 
+    local function avoidGrowthLabel(on)
+        local state = Text.key(on and "TXT_KEY_CIVVACCESS_CHECK_ON" or "TXT_KEY_CIVVACCESS_CHECK_OFF")
+        return Text.format("TXT_KEY_CIVVACCESS_CITYVIEW_FOCUS_AVOID_GROWTH", state)
+    end
     local avoidItem = BaseMenuItems.Text({
         labelFn = function()
             local city = UI.GetHeadSelectedCity()
-            local on = (city ~= nil) and city:IsForcedAvoidGrowth()
-            local state = Text.key(on and "TXT_KEY_CIVVACCESS_CHECK_ON" or "TXT_KEY_CIVVACCESS_CHECK_OFF")
-            return Text.format("TXT_KEY_CIVVACCESS_CITYVIEW_FOCUS_AVOID_GROWTH", state)
+            return avoidGrowthLabel((city ~= nil) and city:IsForcedAvoidGrowth())
         end,
-        onActivate = function(self, menu)
+        onActivate = function()
             local city = UI.GetHeadSelectedCity()
             if city == nil then
                 return
@@ -585,14 +587,12 @@ local function pushWorkerFocus()
             if not isTurnActive() then
                 return
             end
-            Network.SendSetCityAvoidGrowth(city:GetID(), not city:IsForcedAvoidGrowth())
-            -- The Network call is async; speak the item's label after
-            -- (labelFn reads IsForcedAvoidGrowth which won't flip until the
-            -- engine applies the task). Tolerable: the engine applies
-            -- locally in single-player before the next announce, and
-            -- multiplayer briefly shows the previous state until the commit
-            -- -- same delay a sighted player sees on the checkbox.
-            SpeechPipeline.speakInterrupt(self:announce(menu))
+            -- The Network call is async: IsForcedAvoidGrowth still reports
+            -- the old value right after the send, even in single-player, so
+            -- speak the requested state rather than re-reading the label.
+            local newState = not city:IsForcedAvoidGrowth()
+            Network.SendSetCityAvoidGrowth(city:GetID(), newState)
+            SpeechPipeline.speakInterrupt(avoidGrowthLabel(newState))
         end,
     })
     items[#items + 1] = avoidItem
