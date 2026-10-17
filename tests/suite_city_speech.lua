@@ -881,9 +881,28 @@ function M.test_development_includes_production_per_turn()
     setup()
     local city = mkCity({
         productionKey = "TXT_KEY_UNIT_WARRIOR",
-        yieldRate = { [YieldTypes.YIELD_PRODUCTION] = 12, [YieldTypes.YIELD_FOOD] = 5 },
+        productionDiffTimes100 = 1250,
+        yieldRate = { [YieldTypes.YIELD_PRODUCTION] = 9, [YieldTypes.YIELD_FOOD] = 5 },
     })
     T.truthy(CitySpeech.development(city):find("12 per turn", 1, true), "production per-turn expected")
+end
+
+-- A queued Settler converts excess food on a tiered scale the engine
+-- applies inside the production difference; the rate must come from that,
+-- not from yield plus raw food minus consumption (1:1 on vanilla, and on
+-- VP consumption is subtracted twice).
+function M.test_development_food_production_rate_uses_engine_difference()
+    setup()
+    local city = mkCity({
+        productionKey = "TXT_KEY_UNIT_SETTLER",
+        isFoodProduction = true,
+        productionDiffTimes100 = 800,
+        yieldRate = { [YieldTypes.YIELD_PRODUCTION] = 5, [YieldTypes.YIELD_FOOD] = 14 },
+        foodConsumption = 8,
+    })
+    local out = CitySpeech.development(city)
+    T.truthy(out:find("8 per turn", 1, true), "engine production rate expected: " .. out)
+    T.falsy(out:find("11 per turn", 1, true), "raw food must not be added 1:1: " .. out)
 end
 
 -- ===== Development: city-state branch (key 2 on a CS) =====

@@ -326,9 +326,14 @@ end
 -- For the major-team production branch: food per-turn uses
 -- FoodDifference rather than FoodDifferenceTimes100 because we speak
 -- integers and the /100 precision is only for the banner's growth meter.
--- Production per-turn copies CityBannerManager's own IsFoodProduction
--- branch (Settler-era food conversion adds food-minus-consumption to
--- production).
+-- Production per-turn is the engine's own production difference, the
+-- figure CityView shows and the turns-left count is built from. It
+-- includes the item's production modifiers and, while a Settler is
+-- queued, the tiered excess-food conversion (1:1 up to 2, then 1:2 up to
+-- 4, then 1:4). Do not rebuild it as CityBannerManager does (yield plus
+-- raw food-minus-consumption): that counts food 1:1 on vanilla / LekMod,
+-- and on VP, where GetYieldRate already folds the conversion into
+-- production and nets food to zero, it subtracts consumption twice.
 
 local function influenceLine(city)
     local iUs = activePlayerId()
@@ -403,10 +408,7 @@ function CitySpeech.development(city)
             Text.format("TXT_KEY_CIVVACCESS_CITY_PRODUCTION_PROGRESS", city:GetProduction(), city:GetProductionNeeded())
     end
 
-    local prodRate = city:GetYieldRate(YieldTypes.YIELD_PRODUCTION)
-    if city:IsFoodProduction() then
-        prodRate = prodRate + city:GetYieldRate(YieldTypes.YIELD_FOOD) - city:FoodConsumption(true)
-    end
+    local prodRate = math.floor(city:GetCurrentProductionDifferenceTimes100(false, false) / 100)
     parts[#parts + 1] = Text.format("TXT_KEY_CIVVACCESS_CITY_PRODUCTION_PER_TURN", prodRate)
 
     -- Food progress + per-turn first, growth timing last. Speaking
