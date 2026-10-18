@@ -12,17 +12,13 @@
 -- Start to launch. Keeping Start as a separate item mirrors the sighted
 -- flow of browse-then-commit.
 --
--- Only the scenarios in SUPPORTED_SCENARIOS are offered. Starting any other
--- strands the player: the base game and Gods and Kings scenarios switch to a
--- ruleset the mod's payload never loads into, and the remaining Brave New
--- World ones open setup screens the mod doesn't read yet.
+-- Only the scenarios ScenarioRegistry supports are offered. Starting any
+-- other strands the player: the base game and Gods and Kings scenarios
+-- switch to a ruleset the mod's payload never loads into, and the remaining
+-- Brave New World ones open setup screens the mod doesn't read yet.
 
 include("CivVAccess_FrontendCommon")
-
--- Scenario mod IDs, as Modding reports them in g_ScenarioList entries.
-local SUPPORTED_SCENARIOS = {
-    ["55fd836a-72e5-4aba-bbcf-3395b05a0e70"] = true, -- American Civil War
-}
+include("CivVAccess_ScenarioRegistry")
 
 -- Replicates the body of ScenariosMenu.lua line 29's anonymous
 -- StartButton.eLClick callback. Any base-game update that changes the
@@ -65,7 +61,7 @@ local function buildItems()
     local items = {}
     if g_ScenarioList ~= nil then
         for i, entry in ipairs(g_ScenarioList) do
-            if SUPPORTED_SCENARIOS[entry.ModID] then
+            if ScenarioRegistry.isSupported(entry.ModID) then
                 local index = i
                 items[#items + 1] = BaseMenuItems.Choice({
                     labelText = entry.DisplayName,

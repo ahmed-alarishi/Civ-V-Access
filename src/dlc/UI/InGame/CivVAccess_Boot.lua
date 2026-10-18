@@ -121,6 +121,11 @@ include("CivVAccess_SquadMenuCore")
 include("CivVAccess_SquadMapMode")
 include("CivVAccess_HotseatCursorRestore")
 include("CivVAccess_TaskList")
+-- Supported-scenario registry (shared with the front-end Scenarios list) and
+-- the briefing reader it feeds. Before GameScreens and BaselineHandler, whose
+-- briefing row and Shift+B chord call into them.
+include("CivVAccess_ScenarioRegistry")
+include("CivVAccess_ScenarioBriefing")
 -- Screen registry and the Shift+Tab launch bar over it. Before
 -- BaselineHandler, whose screen chords open GameScreens entries; after
 -- Turn (blocker text), SquadMapMode, and Settings, which entries call.

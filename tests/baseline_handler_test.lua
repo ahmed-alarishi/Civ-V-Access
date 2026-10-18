@@ -189,7 +189,14 @@ local function setup()
         onCursorMove = function() end,
     }
     -- Screen chords open GameScreens entries; the real registry is loaded
-    -- so the F10 dispatch test exercises the production popup call.
+    -- so the F10 dispatch test exercises the production popup call. The
+    -- scenario briefing's chord rides on the real ScenarioBriefing too, in
+    -- an ordinary game (no scenario mod activated) unless a test says so.
+    Modding.GetActivatedMods = function()
+        return {}
+    end
+    dofile("src/dlc/UI/Shared/CivVAccess_ScenarioRegistry.lua")
+    dofile("src/dlc/UI/InGame/CivVAccess_ScenarioBriefing.lua")
     dofile("src/dlc/UI/InGame/CivVAccess_GameScreens.lua")
     dofile("src/dlc/UI/InGame/CivVAccess_BaselineHandler.lua")
 end
@@ -316,6 +323,22 @@ function M.test_shift_letter_cluster_dispatches_to_surveyor()
     T.eq(SurveyorCore._calls[6], "ownUnits")
     T.eq(SurveyorCore._calls[7], "enemyUnits")
     T.eq(SurveyorCore._calls[8], "cities")
+end
+
+function M.test_supported_scenario_adds_the_briefing_chord_and_help()
+    setup()
+    Modding.GetActivatedMods = function()
+        return { { ID = "55fd836a-72e5-4aba-bbcf-3395b05a0e70", Version = 1 } }
+    end
+    local h = BaselineHandler.create()
+    T.truthy(findBinding(h, Keys.B, 1), "Shift+B bound")
+    local listed = false
+    for _, entry in ipairs(h.helpEntries) do
+        if entry.keyLabel == "TXT_KEY_CIVVACCESS_BRIEFING_HELP_KEY" then
+            listed = true
+        end
+    end
+    T.truthy(listed, "help lists Shift+B")
 end
 
 return M

@@ -13,6 +13,7 @@ start with `## [X.Y.Z] - YYYY-MM-DD` on its own line for the parser to find it.
 
 New Features and improvements:
 - The American Civil War scenario is playable from the Scenarios menu, including choosing your side and difficulty.
+- In the American Civil War scenario, Shift+B opens the briefing as a list you can arrow through.
 
 ## [2.3.9] - 2026-10-19
 

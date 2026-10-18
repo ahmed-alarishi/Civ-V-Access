@@ -2121,6 +2121,10 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_STATUS_HELP_DESC_TOURISM_DETAIL"] =
 -- active tasks exist (the common case outside scenarios and tutorials).
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_TASKLIST_HELP_KEY"] = "Shift plus T"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_TASKLIST_HELP_DESC"] = "Read active scenario tasks"
+-- Scenario briefing reader; the help entry, chord and launch bar row exist
+-- only in a game running a supported scenario.
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_BRIEFING_HELP_KEY"] = "Shift plus B"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_BRIEFING_HELP_DESC"] = "Read the scenario briefing"
 -- GameMenu (Esc pause menu) tab labels and mod-list payloads. Tab labels
 -- sit alongside the engine-keyed Details tab (TXT_KEY_POPUP_GAME_DETAILS).
 -- The Mods tab lists every mod active in the current save: NO_MODS for the

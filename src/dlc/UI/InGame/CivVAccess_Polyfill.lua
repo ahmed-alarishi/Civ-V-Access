@@ -322,6 +322,13 @@ if Modding.OpenUserData == nil then
         _userDataStore = {}
     end
 end
+-- Mods activated for this game, read by the scenario registry. Default
+-- describes an ordinary game with none; scenario suites overwrite it.
+if Modding.GetActivatedMods == nil then
+    Modding.GetActivatedMods = function()
+        return {}
+    end
+end
 
 -- OptionsManager: detail readouts (and any future production code that
 -- branches on engine option flags) read this. Default false / no-op so a
