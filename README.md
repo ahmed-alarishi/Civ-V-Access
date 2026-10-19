@@ -343,7 +343,7 @@ A few habits and settings that aren't obvious but make the game noticeably smoot
 
 ## Troubleshooting
 
-If you hit a bug or a crash, please zip the log folder at `%USERPROFILE%\Documents\My Games\Sid Meier's Civilization 5\Logs\` and send it to me with a brief description of what happened.
+If you hit a bug or a crash, please zip the log folder at `Documents\My Games\Sid Meier's Civilization 5\Logs\` and send it to me with a brief description of what happened. If OneDrive backs up your Documents folder, that's the Documents folder inside OneDrive.
 
 ## Credits
 

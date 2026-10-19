@@ -163,6 +163,26 @@ internal static class Program
             Assert(output[0].Contains("LoggingEnabled=1"));
         });
 
+        Run("Civ V user paths follow the Windows Documents folder", () =>
+        {
+            // Documents can live outside %USERPROFILE% (OneDrive's PC folder
+            // backup moves it, and so can the user), and the game follows the
+            // shell folder. Where the two differ, a %USERPROFILE%\Documents
+            // path misses config.ini and the cache, and strands the VP tips.
+            var userDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "My Games", "Sid Meier's Civilization 5");
+            var layout = new GameLayout(@"C:\Game");
+            Assert(GameConfigIni.ConfigPath == Path.Combine(userDir, "config.ini"),
+                $"config.ini at {GameConfigIni.ConfigPath}");
+            Assert(layout.DlcCacheDir == Path.Combine(userDir, "cache"),
+                $"cache at {layout.DlcCacheDir}");
+            Assert(layout.VpuiTipsFile == Path.Combine(userDir, "Text", "VPUI_tips_en_us.xml"),
+                $"VP tips at {layout.VpuiTipsFile}");
+            Assert(layout.LegacyPaths().Contains(Path.Combine(userDir, "MODS", "Civ-V-Access (v 1)")),
+                "legacy mod folder under the user folder");
+        });
+
         Run("LocaleCatalog maps cultures", () =>
         {
             Assert(LocaleCatalog.PickForCulture(new System.Globalization.CultureInfo("en-GB")) == "en_US");

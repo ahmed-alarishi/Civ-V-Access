@@ -168,7 +168,7 @@ WorldView sits earlier than InGame in the dispatch chain and its DefaultMessageH
 
 ## Game Log
 
-- `Lua.log` — Lua errors and `print` output, at `%USERPROFILE%\Documents\My Games\Sid Meier's Civilization 5\Logs\Lua.log`. Only populated when `config.ini` has `LoggingEnabled=1`.
+- `Lua.log` — Lua errors and `print` output, at `Logs\Lua.log` in the Civ V Documents tree (`My Games\Sid Meier's Civilization 5` under the shell's Documents folder, which OneDrive can move out of `%USERPROFILE%`; `py tools/civ5_paths.py` prints it). Only populated when `config.ini` has `LoggingEnabled=1`.
 - `APP.log` — engine-level, same directory.
 - `proxy_debug.log` — our proxy's own log, written next to the DLL in the game install directory. Records export resolution and Tolk load.
 

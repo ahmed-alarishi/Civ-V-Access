@@ -6,8 +6,8 @@ using System.Text.RegularExpressions;
 namespace CivVAccess.Installer.Core;
 
 /// <summary>
-/// Civ V's user-side config.ini, at
-/// %USERPROFILE%\Documents\My Games\Sid Meier's Civilization 5\config.ini.
+/// Civ V's user-side config.ini, in the game's user folder
+/// (GameLayout.Civ5DocsDir).
 ///
 /// The mod's no-silent-failures rule depends on Lua.log being populated,
 /// which only happens when LoggingEnabled=1 is set here. The file is created
@@ -18,9 +18,7 @@ namespace CivVAccess.Installer.Core;
 /// </summary>
 internal static class GameConfigIni
 {
-    public static string ConfigPath { get; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-        "Documents", "My Games", "Sid Meier's Civilization 5", "config.ini");
+    public static string ConfigPath => Path.Combine(GameLayout.Civ5DocsDir, "config.ini");
 
     private static readonly Regex LoggingLine = new(
         @"^(\s*LoggingEnabled\s*=\s*)(\S.*?)(\s*)$",

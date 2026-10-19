@@ -392,7 +392,7 @@ internal sealed class Installer : IDisposable
         ExtractZipRouted(zipPath, new Dictionary<string, string>
         {
             ["game/"] = layout.Root,
-            ["docs/"] = layout.Civ5DocsDir,
+            ["docs/"] = GameLayout.Civ5DocsDir,
         });
     }
 

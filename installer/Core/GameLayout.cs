@@ -54,10 +54,16 @@ internal sealed class GameLayout
     public string MinorCivSoundsXml =>
         Path.Combine(Expansion2Dir, "Sounds", "XML", "MinorCivSounds_VoxPopuli.xml");
 
-    public string Civ5DocsDir =>
+    // The game's user folder (config.ini, the cache, the Text folder the tips
+    // load from): My Games under Documents, wherever Windows keeps it.
+    // SpecialFolder.MyDocuments follows a moved or OneDrive-backed-up
+    // Documents folder the way the game and the proxy's
+    // SHGetFolderPathW(CSIDL_PERSONAL) do; %USERPROFILE%\Documents can then be
+    // a different folder the game never reads.
+    public static string Civ5DocsDir =>
         Path.Combine(
-            System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile),
-            "Documents", "My Games", "Sid Meier's Civilization 5");
+            System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments),
+            "My Games", "Sid Meier's Civilization 5");
     public string VpuiTipsFile => Path.Combine(Civ5DocsDir, "Text", "VPUI_tips_en_us.xml");
 
     /// <summary>
@@ -68,10 +74,7 @@ internal sealed class GameLayout
 
     // Engine's DLC enumeration cache. Cleared on install/uninstall so a
     // newly-added or renamed DLC isn't held back by stale cache state.
-    public string DlcCacheDir =>
-        Path.Combine(
-            System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile),
-            "Documents", "My Games", "Sid Meier's Civilization 5", "cache");
+    public string DlcCacheDir => Path.Combine(Civ5DocsDir, "cache");
 
     // The install manifest path; canonical name CivVAccess.install.json.
     public string InstallManifestPath => InstallManifest.PathFor(Root);
@@ -116,9 +119,7 @@ internal sealed class GameLayout
     /// </summary>
     public string[] LegacyPaths()
     {
-        var legacyMods = Path.Combine(
-            System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile),
-            @"Documents\My Games\Sid Meier's Civilization 5\MODS\Civ-V-Access (v 1)");
+        var legacyMods = Path.Combine(Civ5DocsDir, "MODS", "Civ-V-Access (v 1)");
         return new[]
         {
             Path.Combine(Root, "CivVAccess"),
