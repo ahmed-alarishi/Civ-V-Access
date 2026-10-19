@@ -11,15 +11,16 @@ start with `## [X.Y.Z] - YYYY-MM-DD` on its own line for the parser to find it.
 
 ## [Unreleased]
 
+## [2.3.9] - 2026-10-19
+
 New Features and improvements:
-- On Vox Populi, the diplomatic overview (F4) also says how many turns until a militaristic city-state's next gift unit.
-- Ctrl+I now works before a game starts. On the civilization lists in single-player setup, advanced setup, and the multiplayer lobby (including LekMod's draft bans and hands), it opens that civilization's Civilopedia article. Closing it returns you to the same civ, even inside a pulldown.
+- Ctrl+I opens a civilization's Civilopedia article from the civ lists in game setup and the multiplayer lobby.
 
 Bug fixes:
-- An occupied city with a Courthouse no longer shows the occupation penalty in its own unhappiness number. Your empire total was already right; only the per-city figure on the city screen and in the Economic Overview was wrong.
-- Reading a tile's economy with W in fog of war no longer reveals which city controls it now; it reports the owner you last saw.
-- The diplomatic overview (F4) says how often a militaristic city-state gifts units instead of calling it a countdown, and drops it when you've turned gifts off.
-- Closing the Civilopedia after Ctrl+I returns you to where you were. Before, the tech tree went back to its starting tech, several overview screens (Social Policy, Culture, Religion, Economic, Military, Victory Progress, Diplomacy deals, Corporations) went back to a group heading, filtered tables landed on the wrong row, and the trade screen's offer list was left stranded underneath.
+- An occupied city with a Courthouse shows the correct unhappiness on the city screen and in the Economic Overview, a game bug I fixed.
+- Reading a tile's economy with W in fog of war reports the owner you last saw, rather than leaking the current owner.
+- The diplomatic overview (F4) used to imply that it was showing the turns until you receive a unit from a militaristic city-state. It now properly says how often a militaristic city-state gifts units, and only shows the number of turns remaining in Vox Populi and Community Patch, the only game states where that info is available.
+- Closing the Civilopedia after Ctrl+I returns you to exactly where you were, on any screen.
 
 ## [2.3.8] - 2026-10-13
 
