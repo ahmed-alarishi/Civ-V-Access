@@ -498,13 +498,7 @@ local function onPedia(self)
     if not ok or name == nil or name == "" then
         return
     end
-    if Events ~= nil and Events.SearchForPediaEntry ~= nil then
-        -- Arm pedia-transit flag so the underlying screen's hide handler
-        -- preserves cursor state (see CivVAccess_BaseMenuCore.lua's Ctrl+I
-        -- binding for the matching rationale).
-        civvaccess_shared.pediaTransitArmed = true
-        Events.SearchForPediaEntry(name)
-    end
+    BaseMenu.openPedia(name)
 end
 
 -- Type-ahead filter ----------------------------------------------------
@@ -639,7 +633,7 @@ local function buildHelpEntries(spec)
         },
         { keyLabel = "TXT_KEY_CIVVACCESS_HELP_KEY_AZ09", description = "TXT_KEY_CIVVACCESS_HELP_DESC_SEARCH" },
     }
-    if spec._anyPedia and Events ~= nil and Events.SearchForPediaEntry ~= nil then
+    if spec._anyPedia then
         entries[#entries + 1] = {
             keyLabel = "TXT_KEY_CIVVACCESS_HELP_KEY_CTRL_I",
             description = "TXT_KEY_CIVVACCESS_HELP_DESC_CIVILOPEDIA",
@@ -844,7 +838,7 @@ function BaseTable.create(spec)
             end,
         }
     end
-    if anyPedia and Events ~= nil and Events.SearchForPediaEntry ~= nil then
+    if anyPedia then
         self.bindings[#self.bindings + 1] = {
             key = Keys.I,
             mods = MOD_CTRL,

@@ -95,14 +95,9 @@ function BaseMenuHelp.buildHelpEntries(spec)
         appendAll(list, BaseMenuHelp.TabbedHelpEntries)
     end
     list[#list + 1] = BaseMenuHelp.ReadHeaderHelpEntry
-    -- Gate the Civilopedia entry on Game's presence so FrontEnd menus
-    -- (no pedia available) don't advertise a chord that no-ops. The
-    -- binding in BaseMenu.create is similarly gated. (Events.X is not
-    -- a usable gate -- the engine auto-creates event slots on access,
-    -- so Events.SearchForPediaEntry is non-nil even in FrontEnd.)
-    if Game ~= nil then
-        list[#list + 1] = BaseMenuHelp.CivilopediaHelpEntry
-    end
+    -- Ctrl+I reaches the pedia in game and in the front end alike
+    -- (BaseMenu.openPedia), so every menu advertises it.
+    list[#list + 1] = BaseMenuHelp.CivilopediaHelpEntry
     if spec.escapePops then
         list[#list + 1] = BaseMenuHelp.EscapePopsHelpEntry
     end

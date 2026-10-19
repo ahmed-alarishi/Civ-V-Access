@@ -40,14 +40,19 @@ local function setup()
     end
     dofile("src/dlc/UI/Shared/CivVAccess_Text.lua")
     dofile("src/dlc/UI/Shared/CivVAccess_TypeAheadSearch.lua")
-    -- BaseTable delegates wrap-sound playback to BaseMenu._playWrap. Stub
-    -- it here (counter rather than dofiling BaseMenu, which would pull a
-    -- much larger transitive include chain) so the column-edge wrap tests
-    -- can assert the cue fired.
+    -- BaseTable delegates wrap-sound playback to BaseMenu._playWrap and
+    -- Ctrl+I to BaseMenu.openPedia. Stub both here (recorders rather than
+    -- dofiling BaseMenu, which would pull a much larger transitive include
+    -- chain) so the wrap and pedia tests can assert the calls.
     wrapPlays = 0
+    pediaCalls = {}
     BaseMenu = {
         _playWrap = function()
             wrapPlays = wrapPlays + 1
+        end,
+        openPedia = function(name)
+            pediaCalls[#pediaCalls + 1] = name
+            return true
         end,
     }
     -- BaseTable's per-cell tooltip path delegates to BaseMenuItems.appendTooltip
@@ -66,12 +71,6 @@ local function setup()
         end,
     }
     dofile("src/dlc/UI/Shared/CivVAccess_BaseTableCore.lua")
-
-    pediaCalls = {}
-    Events = Events or {}
-    Events.SearchForPediaEntry = function(name)
-        pediaCalls[#pediaCalls + 1] = name
-    end
 
     CivVAccess_Strings = CivVAccess_Strings or {}
     CivVAccess_Strings["TXT_KEY_CIVVACCESS_TBL_TAB"] = "TestTab"

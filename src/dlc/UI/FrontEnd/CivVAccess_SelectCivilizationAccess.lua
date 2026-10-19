@@ -61,6 +61,7 @@ local function buildRegularItems()
         civIds[#civIds + 1] = civID
         items[#items + 1] = BaseMenuItems.Choice({
             labelText = CivDetails.richLabel(row),
+            pediaName = CivDetails.pediaName(row),
             selectedFn = function()
                 return PreGame.GetCivilization(0) == civID
             end,
@@ -111,6 +112,7 @@ local function buildScenarioItems()
         civIds[#civIds + 1] = civID
         items[#items + 1] = BaseMenuItems.Choice({
             labelText = CivDetails.richLabel(row),
+            pediaName = CivDetails.pediaName(row),
             -- Base's currentIndex checks PreGame.GetCivilization(0)
             -- unconditionally, so we mirror that. Scenario slot targeting
             -- is only used by activate (for the SetCivilization write);
@@ -145,6 +147,12 @@ BaseMenu.install(ContextPtr, {
     priorShowHide = ShowHideHandler,
     priorInput = InputHandler,
     onShow = function(h)
+        -- _initialized survives the hide only on a Ctrl+I trip to the
+        -- Civilopedia; keep the list and the civ the user was browsing
+        -- rather than snapping back to the committed one.
+        if h._initialized then
+            return
+        end
         rebuildItems(h)
         h.setInitialIndex(currentIndex())
     end,

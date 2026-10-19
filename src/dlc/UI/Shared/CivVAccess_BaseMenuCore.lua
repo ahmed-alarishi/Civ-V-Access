@@ -105,6 +105,67 @@ local MOD_SHIFT = 1
 local MOD_CTRL = 2
 local MOD_ALT = 4
 
+-- Civilopedia --------------------------------------------------------------
+
+-- Where the Main Menu's own Civilopedia button lives (OtherMenu.xml embeds it).
+local FRONTEND_PEDIA_PATH = "/FrontEnd/MainMenu/Other/Civilopedia"
+
+-- The front-end pedia Context to open, or nil. LekMod's lobby embeds its own
+-- copy (Controls.Civilopedia in that Context, the one its lobby button opens);
+-- everywhere else it is the Other menu's. Looked up on each press rather than
+-- cached: front-end Contexts are rebuilt on a DLC / mod swap, so a held
+-- control could outlive its Context.
+local function frontEndPedia()
+    if Controls ~= nil and Controls.Civilopedia ~= nil then
+        return Controls.Civilopedia
+    end
+    if ContextPtr == nil then
+        return nil
+    end
+    local ok, ctrl = pcall(function()
+        return ContextPtr:LookUpControl(FRONTEND_PEDIA_PATH)
+    end)
+    if ok then
+        return ctrl
+    end
+    return nil
+end
+
+-- Open the Civilopedia on the article titled `name` (localized). Returns
+-- true when a pedia was asked to open.
+--
+-- Either way the pedia-transit flag is armed first: the pedia's show hides
+-- the screen underneath synchronously, and the flag tells that screen's hide
+-- it is being covered rather than closed, so its cursor survives (see
+-- BaseMenu.install). CivilopediaAccess clears it once the pedia is up.
+--
+-- In game the in-game pedia listens for Events.SearchForPediaEntry and shows
+-- itself. In the front end every pedia is a DeferLoad Context that does not
+-- exist until first shown, so the event would reach nothing. There we hand
+-- the name to one pedia through civvaccess_shared.frontEndPediaSearch and
+-- queue it; its onShow resolves the name and lands on the article. Targeting
+-- one copy also keeps LekMod's lobby from showing two pedias at once, which
+-- the broadcast does when both copies have been loaded.
+function BaseMenu.openPedia(name)
+    if name == nil or name == "" then
+        return false
+    end
+    if Game ~= nil then
+        civvaccess_shared.pediaTransitArmed = true
+        Events.SearchForPediaEntry(name)
+        return true
+    end
+    local pedia = frontEndPedia()
+    if pedia == nil then
+        Log.warn("BaseMenu.openPedia: no front-end Civilopedia reachable for '" .. tostring(name) .. "'")
+        return false
+    end
+    civvaccess_shared.pediaTransitArmed = true
+    civvaccess_shared.frontEndPediaSearch = name
+    UIManager:QueuePopup(pedia, PopupPriority.eUtmost)
+    return true
+end
+
 -- Forward declarations: landingSpeak (under "Sound cues" below) needs to
 -- compute the verbose position-within-list, which requires currentItems
 -- defined further down. The level walker is the cleanest source of truth
@@ -1189,43 +1250,32 @@ function BaseMenu.create(spec)
         },
     }
     -- Ctrl+I opens Civilopedia for the focused item when it carries a
-    -- pediaName / pediaNameFn. Gated on Game's presence so the binding
-    -- is absent in FrontEnd Contexts (pre-game menus, no pedia loaded).
-    -- Items without a pedia string silently no-op -- per plan §4.1,
-    -- Ctrl+I on a non-pediable item is ignored, no "no entry" feedback.
-    if Game ~= nil then
-        self.bindings[#self.bindings + 1] = {
-            key = Keys.I,
-            mods = MOD_CTRL,
-            description = "Civilopedia",
-            fn = function()
-                local items = currentItems(self)
-                local item = items[currentIndex(self)]
-                if item == nil then
+    -- pediaName / pediaNameFn, in game and in the front end alike
+    -- (BaseMenu.openPedia). Items without a pedia string silently no-op --
+    -- per plan §4.1, Ctrl+I on a non-pediable item is ignored, no "no
+    -- entry" feedback.
+    self.bindings[#self.bindings + 1] = {
+        key = Keys.I,
+        mods = MOD_CTRL,
+        description = "Civilopedia",
+        fn = function()
+            local items = currentItems(self)
+            local item = items[currentIndex(self)]
+            if item == nil then
+                return
+            end
+            local name = item.pediaName
+            if name == nil and type(item.pediaNameFn) == "function" then
+                local ok, result = pcall(item.pediaNameFn, item._control)
+                if not ok then
+                    Log.error("BaseMenu '" .. tostring(self.name) .. "' pediaNameFn failed: " .. tostring(result))
                     return
                 end
-                local name = item.pediaName
-                if name == nil and type(item.pediaNameFn) == "function" then
-                    local ok, result = pcall(item.pediaNameFn, item._control)
-                    if not ok then
-                        Log.error("BaseMenu '" .. tostring(self.name) .. "' pediaNameFn failed: " .. tostring(result))
-                        return
-                    end
-                    name = result
-                end
-                if name == nil or name == "" then
-                    return
-                end
-                -- Arm the pedia-transit flag so the underlying screen's
-                -- hide handler (fired synchronously by QueuePopup before
-                -- the pedia's own show) preserves cursor state instead
-                -- of resetting it. CivilopediaAccess clears the flag in
-                -- its onShow once the pedia is up.
-                civvaccess_shared.pediaTransitArmed = true
-                Events.SearchForPediaEntry(name)
-            end,
-        }
-    end
+                name = result
+            end
+            BaseMenu.openPedia(name)
+        end,
+    }
     if spec.escapePops then
         local announce = spec.escapeAnnounce
         self.bindings[#self.bindings + 1] = {

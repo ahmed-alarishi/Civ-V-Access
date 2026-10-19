@@ -958,7 +958,19 @@ end
 -- state (e.g. CultureOverview's per-civ row list when the perspective
 -- pulldown picks a new player). Skipped when the engine callback raises so
 -- a failed selection doesn't trigger a partial rebuild.
-local function buildChoice(button, callback, useVoids, parentControlName, announceOverride, isSelected, onSelected)
+--
+-- pediaNameFn: optional thunk naming the entry's Civilopedia article, for
+-- BaseMenu's Ctrl+I (spec.entryPediaNameFn with inst+index closed over).
+local function buildChoice(
+    button,
+    callback,
+    useVoids,
+    parentControlName,
+    announceOverride,
+    isSelected,
+    onSelected,
+    pediaNameFn
+)
     local choice = {
         kind = "choice",
         _button = button,
@@ -966,6 +978,7 @@ local function buildChoice(button, callback, useVoids, parentControlName, announ
         _useVoids = useVoids,
         _isSelected = isSelected,
         _onSelected = onSelected,
+        pediaNameFn = pediaNameFn,
     }
     function choice:isNavigable()
         return self._button ~= nil
@@ -1066,6 +1079,10 @@ function BaseMenuItems.Pulldown(spec)
         spec.entrySelectedFn == nil or type(spec.entrySelectedFn) == "function",
         "Pulldown.entrySelectedFn must be a function if provided"
     )
+    Log.check(
+        spec.entryPediaNameFn == nil or type(spec.entryPediaNameFn) == "function",
+        "Pulldown.entryPediaNameFn must be a function if provided"
+    )
     local item = {
         kind = "pulldown",
         _control = resolveControl(spec, "Pulldown"),
@@ -1079,6 +1096,10 @@ function BaseMenuItems.Pulldown(spec)
         -- (the staging room's civ / team / slot pulldowns). With it the
         -- sub-menu opens on the committed entry instead of the first.
         _entrySelectedFn = spec.entrySelectedFn,
+        -- Optional (inst, index) -> string naming an entry's Civilopedia
+        -- article, so Ctrl+I in the sub-menu opens it (the civ pulldowns
+        -- name each civ's leader).
+        _entryPediaNameFn = spec.entryPediaNameFn,
         _onSelected = spec.onSelected,
     }
     if spec.visibilityControlName ~= nil then
@@ -1100,16 +1121,19 @@ function BaseMenuItems.Pulldown(spec)
     function item:announce(menu)
         return composeSpeech(self, pulldownValueParts(self))
     end
-    function item:activate(menu)
+    -- The sub-menu's Choices, one per entry the probe captured, plus the
+    -- index of the committed entry. Returns nil (after logging) when there
+    -- is nothing to choose from. Shared by activate and the sub-menu's
+    -- onScreenReshown rebuild, so a rebuild sees exactly what opening does.
+    function item:_buildChoices(menuName)
         local pulldown = self._control
         local topCallback = PullDownProbe.callbackFor(pulldown)
         local entries = PullDownProbe.entriesFor(pulldown)
         if entries == nil or #entries == 0 then
             Log.warn(
-                "BaseMenu '" .. menu.name .. "' pulldown '" .. tostring(self.controlName) .. "': no entries captured"
+                "BaseMenu '" .. menuName .. "' pulldown '" .. tostring(self.controlName) .. "': no entries captured"
             )
-            SpeechPipeline.speakInterrupt(self:announce(menu))
-            return
+            return nil
         end
         -- Two wiring patterns. Most pulldowns have a single
         -- RegisterSelectionCallback that dispatches by void. Map-script
@@ -1117,13 +1141,13 @@ function BaseMenuItems.Pulldown(spec)
         -- RegisterCallback(Mouse.eLClick, fn) closure. Prefer the top-level
         -- path when present; otherwise fall back to per-entry button
         -- callbacks (captured by the button probe).
-        local subName = menu.name .. "/" .. tostring(self.controlName) .. "_PullDown"
         local childItems = {}
         local currentText = pulldownCurrentValue(self)
         local initialIndex
         local fallbackUsed = 0
         local entryAnnounceFn = self._entryAnnounceFn
         local entrySelectedFn = self._entrySelectedFn
+        local entryPediaNameFn = self._entryPediaNameFn
         local onSelected = self._onSelected
         for i, inst in ipairs(entries) do
             local cb = topCallback
@@ -1134,11 +1158,17 @@ function BaseMenuItems.Pulldown(spec)
                     fallbackUsed = fallbackUsed + 1
                 end
             end
+            local idx = i
             local announceOverride
             if entryAnnounceFn ~= nil then
-                local idx = i
                 announceOverride = function()
                     return entryAnnounceFn(inst, idx)
+                end
+            end
+            local pediaNameFn
+            if entryPediaNameFn ~= nil then
+                pediaNameFn = function()
+                    return entryPediaNameFn(inst, idx)
                 end
             end
             local isSelected = false
@@ -1165,28 +1195,58 @@ function BaseMenuItems.Pulldown(spec)
             if isSelected and initialIndex == nil then
                 initialIndex = i
             end
-            childItems[i] =
-                buildChoice(inst.Button, cb, useVoids, self.controlName, announceOverride, isSelected, onSelected)
+            childItems[i] = buildChoice(
+                inst.Button,
+                cb,
+                useVoids,
+                self.controlName,
+                announceOverride,
+                isSelected,
+                onSelected,
+                pediaNameFn
+            )
         end
         if topCallback == nil and fallbackUsed == 0 then
             Log.warn(
                 "BaseMenu '"
-                    .. menu.name
+                    .. menuName
                     .. "' pulldown '"
                     .. tostring(self.controlName)
                     .. "': no top-level callback and no per-entry fallbacks captured"
             )
+            return nil
+        end
+        return childItems, initialIndex
+    end
+    function item:activate(menu)
+        local childItems, initialIndex = self:_buildChoices(menu.name)
+        if childItems == nil then
             SpeechPipeline.speakInterrupt(self:announce(menu))
             return
         end
         BaseMenuItems.clickAck()
         local child = BaseMenu.create({
-            name = subName,
+            name = menu.name .. "/" .. tostring(self.controlName) .. "_PullDown",
             displayName = resolveLabel(self),
             items = childItems,
             initialIndex = initialIndex,
             escapePops = true,
         })
+        -- A Ctrl+I pedia trip leaves this sub-menu open while the screen
+        -- beneath is hidden and shown again, and a screen's show can rebuild
+        -- its pulldowns, destroying the entry buttons these Choices hold.
+        -- Install calls this once the screen is back (BaseMenu.install /
+        -- TabbedShell.install transitSubs); re-capture from the live entries.
+        -- setItems keeps the cursor index, and the entry order is the
+        -- screen's own, so the user stays on the entry they looked up.
+        local pulldownItem = self
+        local menuName = menu.name
+        function child.onScreenReshown()
+            local fresh = pulldownItem:_buildChoices(menuName)
+            if fresh ~= nil then
+                child.setItems(fresh)
+            end
+        end
         HandlerStack.push(child)
     end
     function item:adjust(menu, dir, big) end

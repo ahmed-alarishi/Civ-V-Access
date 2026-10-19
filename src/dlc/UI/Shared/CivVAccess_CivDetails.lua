@@ -170,4 +170,38 @@ function CivDetails.richLabelForID(civID)
     return _richByID[civID]
 end
 
+-- Civilopedia article for a civ choice: the leader's, which carries the
+-- unique ability alongside links to the civ and its uniques (LekMod's lobby
+-- portrait opens the same one). Localized, the form Ctrl+I passes everywhere.
+function CivDetails.pediaName(row)
+    return Text.key(row.LeaderDescription)
+end
+
+-- Same, keyed by civilization ID. Nil for Random (-1) or a civ that is not
+-- playable. Built once per Context, like richLabelForID.
+local _pediaByID
+
+function CivDetails.pediaNameForID(civID)
+    if civID == nil or civID < 0 then
+        return nil
+    end
+    if _pediaByID == nil then
+        _pediaByID = {}
+        for _, row in ipairs(CivDetails.playableRows()) do
+            _pediaByID[row.ID] = CivDetails.pediaName(row)
+        end
+    end
+    return _pediaByID[civID]
+end
+
+-- Pulldown-ordered article names matching pulldownLabels: index 1 is the
+-- Random entry and has none, indices 2..N+1 follow playableRows.
+function CivDetails.pulldownPediaNames()
+    local names = {}
+    for i, row in ipairs(CivDetails.playableRows()) do
+        names[i + 1] = CivDetails.pediaName(row)
+    end
+    return names
+end
+
 return CivDetails

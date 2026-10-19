@@ -443,24 +443,29 @@ end
 -- sub-menus it had open before a Ctrl+I pedia round trip hid it: the subs
 -- outlive the hide, and a plain push would bury them under the screen.
 -- Inserting below the top fires no onActivate, so the sub the user is in
--- stays active and silent.
+-- stays active and silent. Each surviving sub then gets onScreenReshown, for
+-- subs holding the screen's controls that its show may have rebuilt (a
+-- pulldown sub-menu re-captures its entries).
 function HandlerStack.pushBeneath(handler, subs)
     local idx = nil
+    local surviving = {}
     for i = 1, #_shared.stack do
         for _, sub in ipairs(subs) do
             if _shared.stack[i] == sub then
-                idx = i
+                idx = idx or i
+                surviving[#surviving + 1] = sub
                 break
             end
-        end
-        if idx ~= nil then
-            break
         end
     end
     if idx == nil then
         return HandlerStack.push(handler)
     end
-    return HandlerStack.insertAt(handler, idx)
+    local ok = HandlerStack.insertAt(handler, idx)
+    for _, sub in ipairs(surviving) do
+        invoke(sub, "onScreenReshown")
+    end
+    return ok
 end
 
 function HandlerStack.pop()

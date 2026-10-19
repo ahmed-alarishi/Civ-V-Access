@@ -208,6 +208,24 @@ local handler = session.install(ContextPtr, {
         -- listener runs). The pendingTarget path here covers an
         -- asynchronous-show fallback. Either path arms quickCloseArmed.
         quickCloseArmed = false
+        -- Front-end Ctrl+I (BaseMenu.openPedia) names the article here and
+        -- queues this Context instead of firing SearchForPediaEntry, since a
+        -- front-end pedia is not loaded until its first show. Base's own
+        -- ShowHide just redrew its last topic, so draw the requested
+        -- article before staging it. Game is nil only in the front end,
+        -- which keeps a request the front end never consumed from steering
+        -- the in-game pedia's next open.
+        local frontEndSearch = civvaccess_shared.frontEndPediaSearch
+        civvaccess_shared.frontEndPediaSearch = nil
+        if frontEndSearch ~= nil and Game == nil then
+            local article = Civilopedia.findArticle(frontEndSearch)
+            if article ~= nil then
+                Civilopedia.selectFoundArticle(article)
+                pendingTarget = { kind = "article", cat = article.entryCategory, entryID = article.entryID }
+            else
+                Log.warn("CivilopediaAccess: no article for front-end search '" .. tostring(frontEndSearch) .. "'")
+            end
+        end
         if pendingTarget == nil then
             return
         end

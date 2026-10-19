@@ -28,6 +28,9 @@ BaseMenu.install(ContextPtr, {
             textKey = "TXT_KEY_CIVILOPEDIA",
             tooltipKey = "TXT_KEY_CIVILOPEDIA_TOOLTIP",
             activate = function()
+                -- The pedia hides this menu; the transit flag keeps our
+                -- place so closing it lands back on this button.
+                civvaccess_shared.pediaTransitArmed = true
                 UIManager:QueuePopup(Controls.Civilopedia, PopupPriority.HallOfFame)
             end,
         }),

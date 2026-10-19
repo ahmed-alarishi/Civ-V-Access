@@ -51,6 +51,17 @@ local function civEntryAnnounce(inst, index)
     return labels[index]
 end
 
+-- Ctrl+I on a civ entry opens its leader's Civilopedia article, by the same
+-- pulldown position as the labels (Random, at index 1, has none). Cached
+-- alongside them.
+local _civPediaNamesCache
+local function civEntryPediaName(inst, index)
+    if _civPediaNamesCache == nil then
+        _civPediaNamesCache = CivDetails.pulldownPediaNames()
+    end
+    return _civPediaNamesCache[index]
+end
+
 -- Text helpers (declared early so the map-type block below can reference
 -- them; Lua locals are only visible after their declaration point).
 --
@@ -282,6 +293,7 @@ local function humanSlotChildren()
                 return pulldownButtonText(Controls.CivPulldown)
             end,
             entryAnnounceFn = civEntryAnnounce,
+            entryPediaNameFn = civEntryPediaName,
         }),
         -- When CivName is visible (custom name set), announce the custom
         -- text; Enter reopens the name editor.
@@ -352,6 +364,7 @@ local function slotChildren(slotIndex)
                     return pulldownButtonText(slot.CivPulldown)
                 end,
                 entryAnnounceFn = civEntryAnnounce,
+                entryPediaNameFn = civEntryPediaName,
             }),
             BaseMenuItems.Pulldown({
                 control = slot.TeamPullDown,
@@ -658,6 +671,7 @@ handler = BaseMenu.install(ContextPtr, {
     -- state changes on every drill.
     onShow = function()
         _civLabelsCache = nil
+        _civPediaNamesCache = nil
         _mapSizeLabelsCache = nil
     end,
     items = buildItems(),

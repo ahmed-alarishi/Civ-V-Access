@@ -409,6 +409,7 @@ local function openBanChooser(playerID, slotIndex, title)
             -- By ID rather than from the row: the by-ID labels are built once
             -- for the whole Context instead of re-querying four tables per civ.
             labelText = civDetailLabel(civID) or tostring(civID),
+            pediaName = CivDetails.pediaNameForID(civID),
             selectedFn = function()
                 return current == civID
             end,
@@ -459,6 +460,9 @@ local function banSlotItems(playerID)
             items[#items + 1] = BaseMenuItems.Choice({
                 labelFn = label,
                 tooltipKey = "TXT_KEY_CIVVACCESS_DRAFT_BAN_SLOT_TT",
+                pediaNameFn = function()
+                    return CivDetails.pediaNameForID(banAt(playerID, slotIndex))
+                end,
                 -- Editability can close between the list being built and the
                 -- press (another player readied, the host locked the draft);
                 -- the chooser would open on a slot LekMod then refuses.
@@ -472,7 +476,10 @@ local function banSlotItems(playerID)
         else
             local civID = banAt(playerID, slotIndex)
             if civID ~= nil then
-                items[#items + 1] = BaseMenuItems.Text({ labelText = civDetailLabel(civID) or tostring(civID) })
+                items[#items + 1] = BaseMenuItems.Text({
+                    labelText = civDetailLabel(civID) or tostring(civID),
+                    pediaName = CivDetails.pediaNameForID(civID),
+                })
             end
         end
     end
@@ -498,6 +505,7 @@ local function handItems(playerID)
         if canPick then
             items[#items + 1] = BaseMenuItems.Choice({
                 labelText = label,
+                pediaName = CivDetails.pediaNameForID(civID),
                 selectedFn = function()
                     return PreGame.GetCivilization(playerID) == civID
                 end,
@@ -506,7 +514,7 @@ local function handItems(playerID)
                 end,
             })
         else
-            items[#items + 1] = BaseMenuItems.Text({ labelText = label })
+            items[#items + 1] = BaseMenuItems.Text({ labelText = label, pediaName = CivDetails.pediaNameForID(civID) })
         end
     end
     return items

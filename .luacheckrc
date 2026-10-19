@@ -268,6 +268,10 @@ globals = {
     "g_GameOptionsManager", "g_DropDownOptionsManager",
     "g_VictoryCondtionsManager", "g_fCountdownTimer",
     "sortedList",
+    -- StagingRoom's light-return flag (LekMod's own; our vanilla / CP
+    -- StagingRoom overrides honor it too). StagingRoomAccess sets it on a
+    -- Ctrl+I pedia trip's hide.
+    "g_SkipStagingFullRefresh",
 
     -- Civilopedia article-history triple: promoted to globals in our
     -- CivilopediaScreen.lua override so the accessibility wiring can read

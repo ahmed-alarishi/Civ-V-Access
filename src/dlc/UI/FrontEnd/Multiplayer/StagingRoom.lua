@@ -1345,6 +1345,19 @@ function ShowHideHandler( bIsHide, bIsInit )
     end
     
     if( not bIsHide ) then
+		-- CivVAccess: a Ctrl+I trip to the Civilopedia hides the lobby only to
+		-- show the pedia over it. Coming back must not rerun the full lobby init
+		-- (ActivateAllowedDLC, StopCountdown, BuildSlots rebuilding the civ
+		-- pulldown the player was browsing). The access layer sets this flag on
+		-- that hide; the flag and the light path are LekMod's lobby's own.
+		if( g_SkipStagingFullRefresh == true ) then
+			g_SkipStagingFullRefresh = false;
+			SetInLobby( true );
+			AdjustScreenSize();
+			UpdateDisplay();
+			UIManager:SetUICursor( 0 );
+			return;
+		end
 		if( Matchmaking.IsHost() and
 			not IsInGameScreen() and
 			PreGame.GetGameOption("GAMEOPTION_PITBOSS") == 1 and

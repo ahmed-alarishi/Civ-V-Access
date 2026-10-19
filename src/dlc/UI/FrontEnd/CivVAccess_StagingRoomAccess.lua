@@ -124,6 +124,12 @@ local function civEntryAnnounce(inst)
     return civRichLabelForID(inst.Button:GetVoid2())
 end
 
+-- Ctrl+I on a civ entry opens its leader's Civilopedia article, by the same
+-- Void2 civID. Random has none.
+local function civEntryPediaName(inst)
+    return CivDetails.pediaNameForID(inst.Button:GetVoid2())
+end
+
 -- Which civ entry is the committed one, by the same Void2 civID. The text
 -- match the framework falls back on finds nothing here: the selected civ is
 -- shown in a sibling CivLabel, not on the pulldown's own button, and LekMod's
@@ -452,6 +458,7 @@ local function slotChildren(slotIndex, instance)
                 return labelText(instance.CivLabel)
             end,
             entryAnnounceFn = civEntryAnnounce,
+            entryPediaNameFn = civEntryPediaName,
             entrySelectedFn = civEntrySelectedFor(function()
                 return instance.playerID
             end),
@@ -553,6 +560,7 @@ local function localSeatChildren()
                 return labelText(Controls.CivLabel)
             end,
             entryAnnounceFn = civEntryAnnounce,
+            entryPediaNameFn = civEntryPediaName,
             entrySelectedFn = civEntrySelectedFor(Matchmaking.GetLocalID),
         }),
         BaseMenuItems.Pulldown({
@@ -716,6 +724,9 @@ local function playersItems()
             tooltipKey = "TXT_KEY_CIVILOPEDIA_TOOLTIP",
             activate = function()
                 if type(OnCivilopediaButton) == "function" then
+                    -- Same round trip as Ctrl+I: arm the transit flag so the
+                    -- hide keeps our place and the return lands back here.
+                    civvaccess_shared.pediaTransitArmed = true
                     OnCivilopediaButton()
                 end
             end,
@@ -1539,12 +1550,32 @@ local function wrappedShowHide(bIsHide, bIsInit)
         Log.error("StagingRoomAccess: priorShowHide failed: " .. tostring(err))
     end
     if bIsHide then
+        -- A Ctrl+I trip to the Civilopedia (BaseMenu.openPedia) hides the
+        -- lobby only to show the pedia over it. Tell the body's next show to
+        -- take its light path (LekMod's own flag, which our vanilla / CP
+        -- StagingRoom overrides honor too) so it does not rebuild the civ
+        -- pulldowns under an open sub-menu, and leave any open sub-menu (a
+        -- civ pulldown, the draft's ban chooser) on the stack: install seats
+        -- the lobby back beneath it on return.
+        if civvaccess_shared.pediaTransitArmed then
+            g_SkipStagingFullRefresh = true
+            return
+        end
         -- Auto-close the chat, hot-join, and leave-confirm panels so nothing
         -- orphans on the stack when the user leaves StagingRoom with one open.
         closeChatPanel(false)
         closeHotJoinPanel(false)
         closeLeaveConfirm(false)
         LekModDraft.closePanels()
+        return
+    end
+    -- _initialized survives the hide only on a pedia trip, whose return the
+    -- body served with its light path: nothing re-initialised, so listeners
+    -- and wraps are still in place, the countdown was not stopped (re-arming
+    -- TickPump here would replace a running countdown's update), and the
+    -- snapshots must keep their baseline so anything that changed while the
+    -- pedia was up is still announced.
+    if handler ~= nil and handler._initialized then
         return
     end
     installListeners()

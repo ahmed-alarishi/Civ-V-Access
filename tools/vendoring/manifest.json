@@ -149,6 +149,11 @@
         {
           "old": "-- Staging Room Screen\r\n-------------------------------------------------\r\n",
           "new": "-- Staging Room Screen\r\n-------------------------------------------------\r\n-- CivVAccess: widget-metatable probes have to install before this chunk's\r\n-- Register*Callback calls run, so the access layer can capture click /\r\n-- check handlers for keyboard activation. Idempotent per Context via\r\n-- civvaccess_shared flags.\r\ninclude(\"CivVAccess_ProbeBoot\")\r\n"
+        },
+        {
+          "engines": ["vanilla", "vp", "cp"],
+          "old": "    if( not bIsHide ) then\r\n\t\tif( Matchmaking.IsHost() and",
+          "new": "    if( not bIsHide ) then\r\n\t\t-- CivVAccess: a Ctrl+I trip to the Civilopedia hides the lobby only to\r\n\t\t-- show the pedia over it. Coming back must not rerun the full lobby init\r\n\t\t-- (ActivateAllowedDLC, StopCountdown, BuildSlots rebuilding the civ\r\n\t\t-- pulldown the player was browsing). The access layer sets this flag on\r\n\t\t-- that hide; the flag and the light path are LekMod's lobby's own.\r\n\t\tif( g_SkipStagingFullRefresh == true ) then\r\n\t\t\tg_SkipStagingFullRefresh = false;\r\n\t\t\tSetInLobby( true );\r\n\t\t\tAdjustScreenSize();\r\n\t\t\tUpdateDisplay();\r\n\t\t\tUIManager:SetUICursor( 0 );\r\n\t\t\treturn;\r\n\t\tend\r\n\t\tif( Matchmaking.IsHost() and"
         }
       ]
     },

@@ -1725,36 +1725,166 @@ function M.test_ctrl_i_pediaNameFn_error_logged_and_swallowed()
     end)
 end
 
-function M.test_ctrl_i_binding_absent_in_frontend()
-    setup()
-    setCtrls({ "A" })
-    -- Simulate FrontEnd by clearing the Game global -- BaseMenu.create
-    -- gates the Ctrl+I binding on Game's presence so it doesn't claim
-    -- the key in pre-game menus where Civilopedia isn't loaded. Events.X
-    -- is not a usable gate (the engine auto-creates event slots on access,
-    -- so Events.SearchForPediaEntry is non-nil even in FrontEnd).
-    local savedGame = Game
+-- Front end: no pedia exists until one is first shown (each is a DeferLoad
+-- Context), so SearchForPediaEntry would reach nothing. Ctrl+I instead names
+-- the article on civvaccess_shared and queues one pedia Context directly --
+-- the screen's own Controls.Civilopedia when it has one (LekMod's lobby).
+-- Simulated by clearing Game, the in-game / front-end discriminator.
+local function inFrontEnd(fn)
+    local savedGame, savedUIManager, savedPriority = Game, UIManager, PopupPriority
+    local queued = {}
     Game = nil
-    local h = BaseMenu.create({
+    UIManager = {
+        QueuePopup = function(_self, ctrl, priority)
+            queued[#queued + 1] = { ctrl = ctrl, priority = priority }
+        end,
+    }
+    PopupPriority = { eUtmost = 99 }
+    local ok, err = pcall(fn, queued)
+    Game, UIManager, PopupPriority = savedGame, savedUIManager, savedPriority
+    civvaccess_shared.frontEndPediaSearch = nil
+    civvaccess_shared.pediaTransitArmed = nil
+    if not ok then
+        error(err, 0)
+    end
+end
+
+local function pediaButtonMenu()
+    return BaseMenu.create({
         name = "T",
         displayName = "Test",
         items = {
             BaseMenuItems.Button({
                 controlName = "A",
                 textKey = "LBL",
-                pediaName = "Library",
+                pediaName = "Washington",
                 activate = function() end,
             }),
         },
     })
-    Game = savedGame
-    local hasCtrlI = false
-    for _, b in ipairs(h.bindings) do
-        if b.key == Keys.I and b.mods == MOD_CTRL then
-            hasCtrlI = true
-        end
+end
+
+function M.test_ctrl_i_in_frontend_queues_pedia_with_named_article()
+    setup()
+    setCtrls({ "A" })
+    local pedia = {}
+    Controls.Civilopedia = pedia
+    withPediaStub(function(captured)
+        inFrontEnd(function(queued)
+            HandlerStack.push(pediaButtonMenu())
+            InputRouter.dispatch(Keys.I, MOD_CTRL, WM_KEYDOWN)
+            T.eq(#queued, 1, "one pedia queued")
+            T.eq(queued[1].ctrl, pedia, "the screen's own pedia Context")
+            T.eq(queued[1].priority, 99, "queued above every front-end popup")
+            T.eq(civvaccess_shared.frontEndPediaSearch, "Washington", "article named for the pedia's onShow")
+            T.truthy(civvaccess_shared.pediaTransitArmed, "transit armed so the hide keeps our place")
+            T.eq(#captured, 0, "no SearchForPediaEntry broadcast in the front end")
+        end)
+    end)
+end
+
+function M.test_ctrl_i_in_frontend_without_reachable_pedia_does_nothing()
+    setup()
+    setCtrls({ "A" })
+    inFrontEnd(function(queued)
+        HandlerStack.push(pediaButtonMenu())
+        InputRouter.dispatch(Keys.I, MOD_CTRL, WM_KEYDOWN)
+        T.eq(#queued, 0, "nothing queued")
+        T.falsy(civvaccess_shared.pediaTransitArmed, "transit not armed when no pedia opens")
+        T.falsy(civvaccess_shared.frontEndPediaSearch, "no stray request left for a later pedia")
+    end)
+end
+
+-- Pulldown entries name their article through entryPediaNameFn (the civ
+-- pulldowns name each civ's leader), so Ctrl+I works inside the sub-menu.
+function M.test_pulldown_entry_pedia_name_feeds_ctrl_i()
+    setup()
+    local pd = makePullDownWithMetatable()
+    populateControls({ PD = pd })
+    patchProbeFromPullDown(pd)
+    pd:ClearEntries()
+    pd:RegisterSelectionCallback(function() end)
+    local i1, i2 = {}, {}
+    pd:BuildEntry("InstanceOne", i1)
+    pd:BuildEntry("InstanceOne", i2)
+    i1.Button:SetText("Random")
+    i2.Button:SetText("Washington")
+    local h = BaseMenu.create({
+        name = "T",
+        displayName = "Screen",
+        items = {
+            BaseMenuItems.Pulldown({
+                controlName = "PD",
+                textKey = "LBL_PD",
+                entryPediaNameFn = function(inst, idx)
+                    if idx == 1 then
+                        return nil
+                    end
+                    return "Leader " .. inst.Button:GetText()
+                end,
+            }),
+        },
+    })
+    HandlerStack.push(h)
+    withPediaStub(function(captured)
+        InputRouter.dispatch(Keys.VK_RETURN, 0, WM_KEYDOWN) -- open the sub-menu
+        InputRouter.dispatch(Keys.I, MOD_CTRL, WM_KEYDOWN)
+        T.eq(#captured, 0, "an entry without an article is a no-op")
+        InputRouter.dispatch(Keys.VK_DOWN, 0, WM_KEYDOWN)
+        InputRouter.dispatch(Keys.I, MOD_CTRL, WM_KEYDOWN)
+        T.eq(captured[1], "Leader Washington", "the focused entry's article")
+    end)
+end
+
+-- Ctrl+I from inside a pulldown sub-menu: the sub outlives the pedia's hide of
+-- the screen, the screen comes back beneath it, and a show that rebuilt the
+-- pulldown's entries (destroying the buttons the sub held) is picked up -- the
+-- sub re-captures the live entries and keeps the user on the same one.
+function M.test_pedia_transit_keeps_pulldown_sub_open_on_rebuilt_entries()
+    setup()
+    local pd = makePullDownWithMetatable()
+    populateControls({ PD = pd })
+    patchProbeFromPullDown(pd)
+    pd:RegisterSelectionCallback(function() end)
+    local function populate(prefix)
+        pd:ClearEntries()
+        local a, b = {}, {}
+        pd:BuildEntry("InstanceOne", a)
+        pd:BuildEntry("InstanceOne", b)
+        a.Button:SetText(prefix .. " A")
+        b.Button:SetText(prefix .. " B")
+        return b
     end
-    T.falsy(hasCtrlI, "no Ctrl+I binding in FrontEnd (Game == nil)")
+    populate("Old")
+    local ctx = makeContextPtr()
+    local fresh
+    local handler
+    handler = BaseMenu.install(ctx, {
+        name = "T",
+        displayName = "Screen",
+        items = { BaseMenuItems.Pulldown({ controlName = "PD", textKey = "LBL_PD" }) },
+        -- Stands in for a screen whose show re-populates its pulldowns.
+        priorShowHide = function(bIsHide)
+            if not bIsHide and fresh == nil and handler ~= nil and handler._initialized then
+                fresh = populate("New")
+            end
+        end,
+    })
+    ctx._sh(false, false)
+    InputRouter.dispatch(Keys.VK_RETURN, 0, WM_KEYDOWN) -- open the sub-menu
+    InputRouter.dispatch(Keys.VK_DOWN, 0, WM_KEYDOWN)
+    local sub = HandlerStack.active()
+    T.truthy(sub ~= handler, "sub-menu open")
+    civvaccess_shared.pediaTransitArmed = true
+    ctx._sh(true, false)
+    civvaccess_shared.pediaTransitArmed = nil
+    ctx._sh(false, false)
+    T.eq(HandlerStack.active(), sub, "still inside the sub-menu")
+    T.eq(HandlerStack.at(HandlerStack.count() - 1), handler, "screen beneath it")
+    T.truthy(fresh ~= nil, "the show rebuilt the entries")
+    local item = sub._items[sub._indices[1]]
+    T.eq(sub._indices[1], 2, "cursor kept on the same entry")
+    T.eq(item._button, fresh.Button, "entry re-captured from the live pulldown")
 end
 
 -- Audio cues -------------------------------------------------------------
