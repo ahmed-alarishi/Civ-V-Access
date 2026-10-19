@@ -13,7 +13,7 @@ start with `## [X.Y.Z] - YYYY-MM-DD` on its own line for the parser to find it.
 
 New Features and improvements:
 - On Vox Populi, the diplomatic overview (F4) also says how many turns until a militaristic city-state's next gift unit.
-- Ctrl+I now works before a game starts. On the civilization lists in single-player setup, advanced setup, and the multiplayer lobby (including LekMod's draft bans and hands), it opens that civilization's leader in the Civilopedia. Closing it returns you to the same civ, even inside a pulldown.
+- Ctrl+I now works before a game starts. On the civilization lists in single-player setup, advanced setup, and the multiplayer lobby (including LekMod's draft bans and hands), it opens that civilization's Civilopedia article. Closing it returns you to the same civ, even inside a pulldown.
 
 Bug fixes:
 - An occupied city with a Courthouse no longer shows the occupation penalty in its own unhappiness number. Your empire total was already right; only the per-city figure on the city screen and in the Economic Overview was wrong.

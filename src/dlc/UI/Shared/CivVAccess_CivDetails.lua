@@ -170,11 +170,12 @@ function CivDetails.richLabelForID(civID)
     return _richByID[civID]
 end
 
--- Civilopedia article for a civ choice: the leader's, which carries the
--- unique ability alongside links to the civ and its uniques (LekMod's lobby
--- portrait opens the same one). Localized, the form Ctrl+I passes everywhere.
+-- Civilopedia article for a civ choice: the civilization's, which lists its
+-- unique units, buildings and improvements and links to its leader.
+-- Localized, the form Ctrl+I passes everywhere (Vox Populi's pedia indexes
+-- civilizations by localized name only).
 function CivDetails.pediaName(row)
-    return Text.key(row.LeaderDescription)
+    return Text.key(row.ShortDescription)
 end
 
 -- Same, keyed by civilization ID. Nil for Random (-1) or a civ that is not

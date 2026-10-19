@@ -16,7 +16,7 @@ You may wish to disable the Steam overlay, from Steam settings/in game/enable St
 
 **Shift+/** (question mark) opens a list of every key active in the current context. If ever you're unsure of what keys will work on any given screen, start here. It's a searchable list, so you can also type the name of the action you're looking for and you'll usually find it. You can also open this document and join the mod's Discord directly from the bottom of that menu.
 
-**Ctrl+I** opens the Civilopedia (in-game help) entry for whatever is currently focused, when one exists. Use this if you want to look up, for example, what the current unit under the cursor does. It also works before a game starts, on the civilization lists when setting up a game or in the multiplayer lobby, where it opens that civilization's leader. Closing the Civilopedia puts you back where you were, even inside a civilization pulldown.
+**Ctrl+I** opens the Civilopedia (in-game help) entry for whatever is currently focused, when one exists. Use this if you want to look up, for example, what the current unit under the cursor does. It also works before a game starts, on the civilization lists when setting up a game or in the multiplayer lobby, where it opens that civilization's article. Closing the Civilopedia puts you back where you were, even inside a civilization pulldown.
 
 ## Languages and keyboards
 

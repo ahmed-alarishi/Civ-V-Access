@@ -1098,7 +1098,7 @@ function BaseMenuItems.Pulldown(spec)
         _entrySelectedFn = spec.entrySelectedFn,
         -- Optional (inst, index) -> string naming an entry's Civilopedia
         -- article, so Ctrl+I in the sub-menu opens it (the civ pulldowns
-        -- name each civ's leader).
+        -- name each civilization's).
         _entryPediaNameFn = spec.entryPediaNameFn,
         _onSelected = spec.onSelected,
     }

@@ -124,7 +124,7 @@ local function civEntryAnnounce(inst)
     return civRichLabelForID(inst.Button:GetVoid2())
 end
 
--- Ctrl+I on a civ entry opens its leader's Civilopedia article, by the same
+-- Ctrl+I on a civ entry opens its Civilopedia article, by the same
 -- Void2 civID. Random has none.
 local function civEntryPediaName(inst)
     return CivDetails.pediaNameForID(inst.Button:GetVoid2())

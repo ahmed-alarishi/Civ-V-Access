@@ -51,7 +51,7 @@ local function civEntryAnnounce(inst, index)
     return labels[index]
 end
 
--- Ctrl+I on a civ entry opens its leader's Civilopedia article, by the same
+-- Ctrl+I on a civ entry opens its Civilopedia article, by the same
 -- pulldown position as the labels (Random, at index 1, has none). Cached
 -- alongside them.
 local _civPediaNamesCache
