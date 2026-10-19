@@ -1966,4 +1966,24 @@ function M.test_vp_trade_mission_extras_scale_wltkd_and_list_resources()
     end
     T.eq(vp.tradeMissionExtras(unit), nil, "Community-Patch-only adds nothing")
 end
+-- VP exposes the live gift-unit countdown; -1 is the engine's never-seeded
+-- sentinel and must not be spoken as a turn count. Vanilla has no binding.
+function M.test_vp_minor_unit_gift_turns_left_reads_counter()
+    local vp, env = loadVPWithFork()
+    local counter = 7
+    env.Players = {
+        [30] = {
+            GetUnitSpawnCounter = function(_, majorId)
+                T.eq(majorId, 0, "counter is read for the asking major")
+                return counter
+            end,
+        },
+    }
+    T.eq(vp.minorUnitGiftTurnsLeft(30, 0), 7)
+    counter = -1
+    T.eq(vp.minorUnitGiftTurnsLeft(30, 0), nil, "unseeded counter has no countdown")
+    local vanilla = loadSeam(VANILLA_PATH)
+    T.eq(vanilla.minorUnitGiftTurnsLeft(30, 0), nil, "vanilla exposes no countdown")
+end
+
 return M

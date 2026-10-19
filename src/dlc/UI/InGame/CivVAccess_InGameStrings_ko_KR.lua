@@ -1581,6 +1581,11 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_BONUS_FOOD_CAPITAL"] = "수도에 +
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_BONUS_FOOD_OTHER"] = "다른 도시에 +{1_N} 식량"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_BONUS_SCIENCE"] = "+{1_N} 과학"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_BONUS_MILITARY"] = {
+    other = "{1_N} 턴마다 선물 유닛",
+}
+-- Plural driven by {1_N} (live countdown to the next gift unit; only
+-- engines that expose the counter speak it).
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_BONUS_MILITARY_NEXT"] = {
     other = "{1_N} 턴 후 선물 유닛 도착",
 }
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_EXPORTS_LIST"] = "{1_List} 수출 중"

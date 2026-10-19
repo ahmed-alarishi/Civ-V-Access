@@ -1588,7 +1588,12 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_BONUS_FOOD_CAPITAL"] = "首都に+{
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_BONUS_FOOD_OTHER"] = "他の都市に+{1_N}食料"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_BONUS_SCIENCE"] = "+{1_N}科学力"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_BONUS_MILITARY"] = {
-    other = "{1_N}ターン後に贈呈ユニット",
+    other = "{1_N}ターンごとに贈呈ユニット",
+}
+-- Plural driven by {1_N} (live countdown to the next gift unit; only
+-- engines that expose the counter speak it).
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_BONUS_MILITARY_NEXT"] = {
+    other = "次の贈呈ユニットまで{1_N}ターン",
 }
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_EXPORTS_LIST"] = "輸出中: {1_List}"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_OPEN_BORDERS"] = "国境開放"

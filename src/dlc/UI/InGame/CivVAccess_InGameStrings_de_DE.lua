@@ -1882,6 +1882,12 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_BONUS_FOOD_CAPITAL"] = "+{1_N} Nahr
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_BONUS_FOOD_OTHER"] = "+{1_N} Nahrung in anderen Städten"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_BONUS_SCIENCE"] = "+{1_N} Forschung"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_BONUS_MILITARY"] = {
+    one = "Geschenkeinheit alle {1_N} Runde",
+    other = "Geschenkeinheit alle {1_N} Runden",
+}
+-- Plural driven by {1_N} (live countdown to the next gift unit; only
+-- engines that expose the counter speak it).
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_BONUS_MILITARY_NEXT"] = {
     one = "nächste Geschenkeinheit in {1_N} Runde",
     other = "nächste Geschenkeinheit in {1_N} Runden",
 }

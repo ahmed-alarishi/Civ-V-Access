@@ -1036,6 +1036,13 @@ function EngineData.minorPersonalityTextKey(playerId)
     return row.Description
 end
 
+-- Drift read: turns until a militaristic city-state's next gift unit (see
+-- the vanilla file for the contract). LekMod binds only the average
+-- interval, like vanilla, so there is no countdown to report.
+function EngineData.minorUnitGiftTurnsLeft(minorId, majorId)
+    return nil
+end
+
 -- Drift read: the player credited with a city's original capital for
 -- domination-victory accounting (VictoryProgress). Vanilla has no vassalage
 -- or city-state capital redirection, so the current owner is the controller.

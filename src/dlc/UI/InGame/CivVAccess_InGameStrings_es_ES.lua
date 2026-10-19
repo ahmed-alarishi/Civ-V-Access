@@ -2389,8 +2389,14 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_BONUS_FAITH"] = "+{1_N} fe"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_BONUS_FOOD_CAPITAL"] = "+{1_N} comida en la capital"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_BONUS_FOOD_OTHER"] = "+{1_N} comida en otras ciudades"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_BONUS_SCIENCE"] = "+{1_N} ciencia"
--- Plural driven by {1_N} (turns until next gift unit arrives).
+-- Plural driven by {1_N} (average turns between gift units, not a countdown).
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_BONUS_MILITARY"] = {
+    one = "unidad de regalo cada {1_N} turno",
+    other = "unidad de regalo cada {1_N} turnos",
+}
+-- Plural driven by {1_N} (live countdown to the next gift unit; only
+-- engines that expose the counter speak it).
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_DIPLO_BONUS_MILITARY_NEXT"] = {
     one = "siguiente unidad de regalo en {1_N} turno",
     other = "siguiente unidad de regalo en {1_N} turnos",
 }

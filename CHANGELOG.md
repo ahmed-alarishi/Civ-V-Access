@@ -11,9 +11,13 @@ start with `## [X.Y.Z] - YYYY-MM-DD` on its own line for the parser to find it.
 
 ## [Unreleased]
 
+New Features and improvements:
+- On Vox Populi, the diplomatic overview (F4) also says how many turns until a militaristic city-state's next gift unit.
+
 Bug fixes:
 - An occupied city with a Courthouse no longer shows the occupation penalty in its own unhappiness number. Your empire total was already right; only the per-city figure on the city screen and in the Economic Overview was wrong.
 - Reading a tile's economy with W in fog of war no longer reveals which city controls it now; it reports the owner you last saw.
+- The diplomatic overview (F4) says how often a militaristic city-state gifts units instead of calling it a countdown, and drops it when you've turned gifts off.
 
 ## [2.3.8] - 2026-10-13
 

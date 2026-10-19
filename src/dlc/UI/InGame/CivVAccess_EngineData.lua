@@ -884,6 +884,14 @@ function EngineData.minorPersonalityTextKey(playerId)
     return nil
 end
 
+-- Drift read: turns until a militaristic city-state's next gift unit for
+-- majorId, or nil when the engine doesn't expose the countdown. Vanilla
+-- keeps the counter internal and binds only the average interval
+-- (GetCurrentSpawnEstimate), which is all the game's own tooltip shows.
+function EngineData.minorUnitGiftTurnsLeft(minorId, majorId)
+    return nil
+end
+
 -- Drift read: the player credited with a city's original capital for
 -- domination-victory accounting (VictoryProgress). Vanilla has no vassalage
 -- or city-state capital redirection, so the current owner is the controller.

@@ -1117,6 +1117,21 @@ function EngineData.minorPersonalityTextKey(playerId)
     return nil
 end
 
+-- Drift read: turns until a militaristic city-state's next gift unit (see
+-- the vanilla file for the contract). CP-DLL binds the live counter as
+-- GetUnitSpawnCounter, and VP's city-state status tooltip shows it beside
+-- the average interval. The counter ticks down at turn start and reseeds
+-- on the spawn, so between turns a running countdown is at least 1;
+-- anything lower (-1 is the never-seeded sentinel) has no countdown to
+-- report.
+function EngineData.minorUnitGiftTurnsLeft(minorId, majorId)
+    local turns = Players[minorId]:GetUnitSpawnCounter(majorId)
+    if turns == nil or turns < 1 then
+        return nil
+    end
+    return turns
+end
+
 -- Drift read: the player credited with a city's original capital for
 -- domination victory. VP's GetOwnerForDominationVictory redirects a vassal's
 -- held capital to its master and a city-state's capital to its major ally (or

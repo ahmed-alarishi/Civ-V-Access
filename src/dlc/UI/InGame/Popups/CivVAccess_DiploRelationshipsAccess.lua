@@ -816,9 +816,17 @@ local function minorBonusFragments(iOther)
     if faith ~= 0 then
         out[#out + 1] = Text.format("TXT_KEY_CIVVACCESS_DIPLO_BONUS_FAITH", faith)
     end
+    -- Average interval between gifts (base plus half the random spread),
+    -- followed by the live countdown where the engine exposes one (VP's
+    -- status tooltip shows both). Skipped when the player has turned gifts
+    -- off from this CS, since the estimate stays nonzero then.
     local spawn = pOther:GetCurrentSpawnEstimate(iUs)
-    if spawn ~= 0 then
+    if spawn ~= 0 and not pOther:IsMinorCivUnitSpawningDisabled(iUs) then
         out[#out + 1] = Text.formatPlural("TXT_KEY_CIVVACCESS_DIPLO_BONUS_MILITARY", spawn, spawn)
+        local left = EngineData.minorUnitGiftTurnsLeft(iOther, iUs)
+        if left ~= nil then
+            out[#out + 1] = Text.formatPlural("TXT_KEY_CIVVACCESS_DIPLO_BONUS_MILITARY_NEXT", left, left)
+        end
     end
     return out
 end
