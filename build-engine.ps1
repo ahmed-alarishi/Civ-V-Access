@@ -10,7 +10,7 @@
     to the repo so contributors can deploy without rebuilding).
 
     Requires:
-      - Civ V Modding SDK installed (default: Steam install)
+      - Civ V Modding SDK installed (found via Steam; CIV5_SDK_DIR overrides)
       - Windows SDK 7.0 components installed via build/sdk7-install/install.cmd
         (specifically vc_stdx86 -> VS 9.0\VC\bin\cl.exe and v7.0\Include + Lib)
 
@@ -18,7 +18,8 @@
     A vanilla smoke build is the same code path with no overlay applied.
 
 .PARAMETER SdkSourceDir
-    Override the SDK source root. Defaults to the Steam install path.
+    Override the SDK source root. Defaults to CIV5_SDK_DIR, then the SDK in
+    any Steam library.
 
 .PARAMETER Clean
     Delete build/engine/source/ before mirroring. Forces a from-scratch build.
@@ -39,16 +40,19 @@ $distDir      = Join-Path $repoRoot 'dist\engine'
 $projectName  = 'CvGameCoreDLL_Expansion2'
 $outDllName   = 'CvGameCore_Expansion2.dll'
 
+. (Join-Path $repoRoot 'tools\civ5-paths.ps1')
+
 # Toolchain locations (set by Windows SDK 7.0 vc_stdx86 + WinSDK MSI installs).
-$vc9Root      = 'C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC'
-$sdk7Root     = 'C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0'
+$toolchain    = Get-Vc9Toolchain
+$vc9Root      = $toolchain.Vc9Root
+$sdk7Root     = $toolchain.Sdk7Root
 $vc9Bin       = Join-Path $vc9Root 'bin'
 $cl           = Join-Path $vc9Bin 'cl.exe'
 $linkExe      = Join-Path $vc9Bin 'link.exe'
 # cl.exe / link.exe load mspdb80.dll, msobj80.dll, mspdbcore.dll from
 # Common7\IDE\ rather than VC\bin\. Without this on PATH, /Zi builds fail with
 # STATUS_DLL_NOT_FOUND (0xC0000135).
-$vsCommon7Ide = 'C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE'
+$vsCommon7Ide = $toolchain.VsCommon7Ide
 
 function Resolve-SdkSourceDir {
     param([string]$Explicit)
@@ -56,13 +60,7 @@ function Resolve-SdkSourceDir {
         if (-not (Test-Path $Explicit)) { throw "Override SDK source not found: $Explicit" }
         return (Resolve-Path $Explicit).Path
     }
-    $candidates = @(
-        "C:\Program Files (x86)\Steam\steamapps\common\Sid Meier's Civilization V SDK\CvGameCoreSource"
-    )
-    foreach ($c in $candidates) {
-        if (Test-Path (Join-Path $c $projectName)) { return $c }
-    }
-    throw "Could not find Civ V SDK source. Pass -SdkSourceDir or install the SDK from Steam (`Sid Meier's Civilization V SDK`)."
+    return (Resolve-Civ5SdkSourceDir)
 }
 
 function Assert-Toolchain {

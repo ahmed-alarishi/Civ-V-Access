@@ -32,7 +32,8 @@ update VERSION_IMM below.
 import subprocess, sys
 import pefile
 
-OBJDUMP = r'C:\Program Files\LLVM\bin\llvm-objdump.exe'
+from civ5_paths import find_llvm_tool
+
 VERSION_IMM = '$0x97'  # MOD_DLL_VERSION_NUMBER (151) as it appears in the disassembly
 
 # Distinctive string literals our fork bakes in: CivVAccess LuaEvent hook names
@@ -60,7 +61,7 @@ def main(dll):
         if s.PointerToRawData <= off < s.PointerToRawData + s.SizeOfRawData:
             va = off - s.PointerToRawData + s.VirtualAddress + pe.OPTIONAL_HEADER.ImageBase
     imm = '$0x%x' % va
-    disasm = subprocess.run([OBJDUMP, '-d', '--no-show-raw-insn', dll],
+    disasm = subprocess.run([find_llvm_tool('llvm-objdump'), '-d', '--no-show-raw-insn', dll],
                             capture_output=True, text=True).stdout
     lines = disasm.splitlines()
     refs = [i for i, l in enumerate(lines) if imm in l]

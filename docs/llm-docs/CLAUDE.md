@@ -59,7 +59,7 @@ URLs for community references that supplement the local files: Civfanatics modik
 
 - **Game mechanics reference** (combat formulas, yield math, tech tree, policy effects). Not built — Claude's training data covers Civ V mechanics adequately, and the accessibility mod doesn't compute strategy. When mechanics matter, read the relevant `Assets/Gameplay/XML/` data file directly.
 - **Hotkey reference.** Lives at `docs/hotkey-reference.md` — already comprehensive.
-- **Game source.** Don't copy or summarize. Read it in place at `C:\Program Files (x86)\Steam\steamapps\common\Sid Meier's Civilization V\Assets\` when you need it.
+- **Game source.** Don't copy or summarize. Read it in place under the install's `Assets\` folder when you need it; `py tools/civ5_paths.py` prints where the install is on this machine.
 - **SDK Lua API HTML.** It's an unfinished stub (method names only, no signatures). The grep-based `lua-api/` here supersedes it.
 
 ## When to regenerate

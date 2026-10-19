@@ -20,12 +20,12 @@
     directly -- it is already baked into CvGameDatabaseWin32.lib.
 
     Requires:
-      - The LekMod clone on its `civvaccess` branch (default: ~/Documents/access-mods/civ-v/Lekmod)
+      - The LekMod clone on its `civvaccess` branch (default: the Lekmod directory beside this repo)
       - Windows SDK 7.0 + VC9 installed via build/sdk7-install/install.cmd
         (same toolchain as build-engine.ps1)
 
 .PARAMETER LekModRepo
-    Override the LekMod clone root. Defaults to the Lekmod checkout beside this repo, then ~/Documents/access-mods/civ-v/Lekmod.
+    Override the LekMod clone root. Defaults to the Lekmod checkout beside this repo.
 
 .PARAMETER Clean
     Delete build/engine-lekmod/ intermediates before building.
@@ -44,25 +44,27 @@ $distDir      = Join-Path $repoRoot 'dist\engine-lekmod'
 $projectName  = 'CvGameCoreDLL_Expansion2'
 $outDllName   = 'CvGameCore_Expansion2.dll'
 
+. (Join-Path $repoRoot 'tools\civ5-paths.ps1')
+
 # Toolchain locations -- identical to build-engine.ps1 (VC9 + Windows SDK 7.0).
-$vc9Root      = 'C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC'
-$sdk7Root     = 'C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0'
+$toolchain    = Get-Vc9Toolchain
+$vc9Root      = $toolchain.Vc9Root
+$sdk7Root     = $toolchain.Sdk7Root
 $vc9Bin       = Join-Path $vc9Root 'bin'
 $cl           = Join-Path $vc9Bin 'cl.exe'
 $linkExe      = Join-Path $vc9Bin 'link.exe'
-$vsCommon7Ide = 'C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE'
+$vsCommon7Ide = $toolchain.VsCommon7Ide
 
 function Resolve-LekModProjDir {
     param([string]$Explicit)
     $candidates = @()
     if ($Explicit) { $candidates += $Explicit }
     $candidates += (Join-Path (Split-Path -Parent $repoRoot) 'Lekmod')
-    $candidates += (Join-Path $HOME 'Documents\access-mods\civ-v\Lekmod')
     foreach ($c in $candidates) {
         $proj = Join-Path $c "LEKMOD_DLL\$projectName"
         if (Test-Path (Join-Path $proj 'CvGameCoreDLL.def')) { return (Resolve-Path $proj).Path }
     }
-    throw "Could not find the LekMod DLL project. Clone https://github.com/EnormousApplePie/Lekmod beside this repo or to ~/Documents/access-mods/civ-v/Lekmod (and check out the civvaccess branch), or pass -LekModRepo."
+    throw "Could not find the LekMod DLL project. Clone https://github.com/EnormousApplePie/Lekmod beside this repo (and check out the civvaccess branch), or pass -LekModRepo."
 }
 
 function Assert-Toolchain {

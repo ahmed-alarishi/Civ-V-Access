@@ -12,8 +12,11 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-GAME_ROOT = Path(r"C:\Program Files (x86)\Steam\steamapps\common\Sid Meier's Civilization V\Assets")
-OUT_DIR = Path(r"C:\Users\rasha\Documents\Civ-V-Mod\docs\llm-docs\lua-api")
+OUT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(OUT_DIR.parents[2] / "tools"))
+from civ5_paths import find_game_dir  # noqa: E402
+
+GAME_ROOT = Path(find_game_dir()) / "Assets"
 
 # Receiver name -> class
 # Colon receivers (method calls on handles).

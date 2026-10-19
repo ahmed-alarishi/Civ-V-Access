@@ -62,10 +62,9 @@ import re
 import sys
 from pathlib import Path
 
+from civ5_paths import find_game_dir
+
 REPO = Path(__file__).resolve().parent.parent
-GAME = Path(
-    r"C:\Program Files (x86)\Steam\steamapps\common\Sid Meier's Civilization V"
-)
 
 # Locales the script writes. en_US is the source of truth and is edited by
 # hand, so it is not in this list.
@@ -212,7 +211,7 @@ def dump(txt_key):
         for loc in ["en_US"] + LOCALES
     }
     found = {}
-    for xml in (GAME / "Assets").rglob("CIV5GameText*.xml"):
+    for xml in (Path(find_game_dir()) / "Assets").rglob("CIV5GameText*.xml"):
         loc = None
         for part in xml.parts:
             if part.lower() in canonical:

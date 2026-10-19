@@ -371,7 +371,7 @@ Modifier-combined keys (`Ctrl+`, `Shift+`, `Alt+`) that are unused in the tables
 
 ## Source files
 
-Base game, under `C:\Program Files (x86)\Steam\steamapps\common\Sid Meier's Civilization V\Assets\`:
+Base game, under the game install's `Assets\` folder:
 - `Gameplay\XML\Units\CIV5Controls.xml` — global UI controls, advisor screens
 - `Gameplay\XML\Units\CIV5Commands.xml` — direct unit commands
 - `Gameplay\XML\Units\CIV5Missions.xml` — unit mission hotkeys

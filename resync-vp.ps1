@@ -127,6 +127,7 @@ $modNames     = @('(1) Community Patch', '(2) Vox Populi')
 $substratePaths = @('VPUI', 'MinorCivSounds_VoxPopuli.xml', 'VPUI Text/VPUI_tips_en_us.xml', 'Expansion2_VoxPopuli.Civ5Pkg')
 
 . (Join-Path $repoRoot 'tools\component-versions.ps1')
+. (Join-Path $repoRoot 'tools\civ5-paths.ps1')
 
 if ([string]::IsNullOrWhiteSpace($ClonePath)) {
     $ClonePath = Join-Path (Split-Path -Parent $repoRoot) 'Community-Patch-DLL'
@@ -134,8 +135,7 @@ if ([string]::IsNullOrWhiteSpace($ClonePath)) {
 $ClonePath = (Resolve-Path -LiteralPath $ClonePath).ProviderPath
 
 if ([string]::IsNullOrWhiteSpace($ModsDir)) {
-    $civ5Docs = Join-Path $env:USERPROFILE "Documents\My Games\Sid Meier's Civilization 5"
-    $ModsDir  = Join-Path $civ5Docs 'MODS'
+    $ModsDir = Join-Path (Get-Civ5DocsDir) 'MODS'
 }
 
 # ---------------------------------------------------------------- helpers
@@ -280,8 +280,8 @@ function Invoke-EnginePhase {
         # The build script expects clang-cl / lld-link on PATH; the LLVM installer
         # does not add them by default.
         if (-not (Get-Command clang-cl.exe -ErrorAction SilentlyContinue)) {
-            $llvmBin = 'C:\Program Files\LLVM\bin'
-            if (Test-Path (Join-Path $llvmBin 'clang-cl.exe')) { $env:PATH = "$llvmBin;$($env:PATH)" }
+            $llvmBin = Resolve-LlvmBin
+            if ($llvmBin) { $env:PATH = "$llvmBin;$($env:PATH)" }
         }
         # On an ARM64 host clang-cl defaults to aarch64, so the script's x86-only
         # flags (-msse3) are rejected; -m32 alone does not retarget. Inject the

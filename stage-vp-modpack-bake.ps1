@@ -65,7 +65,7 @@ if ([string]::IsNullOrWhiteSpace($ClonePath)) {
     $ClonePath = Join-Path (Split-Path -Parent $repoRoot) 'Community-Patch-DLL'
 }
 
-$civ5DocsDir  = Join-Path $env:USERPROFILE "Documents\My Games\Sid Meier's Civilization 5"
+$civ5DocsDir  = Get-Civ5DocsDir
 $vpModsDllDir = Join-Path $civ5DocsDir 'MODS\(1) Community Patch'
 
 # Set in the driver after Resolve-CivVInstallDir, before any helper uses them.

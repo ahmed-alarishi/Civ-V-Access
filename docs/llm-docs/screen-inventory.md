@@ -2,7 +2,7 @@
 
 This is a map, not deep documentation. Each entry gives the bare stem (the name `include("Foo")` and Civ's VFS resolve), a one-line purpose, which DLC overrides exist, and the top-level interactive controls. "Overrides" means the same stem also appears under `DLC/Expansion/UI` (G&K) or `DLC/Expansion2/UI` (BNW) and shadows the base file at runtime; unless explicitly noted, the override is structurally similar to the base version.
 
-Paths below are relative to `C:\Program Files (x86)\Steam\steamapps\common\Sid Meier's Civilization V\Assets\`. Where a file exists only in an expansion, that is called out. The `_small` XML variants are alternate layouts selected by resolution and share the same Lua. The ContextPtr's identity for lookup purposes is the filename stem; XML root `ID=` attributes are unreliable and have been omitted.
+Paths below are relative to the game install's `Assets\` folder (`py tools/civ5_paths.py` prints the install location). Where a file exists only in an expansion, that is called out. The `_small` XML variants are alternate layouts selected by resolution and share the same Lua. The ContextPtr's identity for lookup purposes is the filename stem; XML root `ID=` attributes are unreliable and have been omitted.
 
 ## FrontEnd — Main Menu, Setup, Load
 

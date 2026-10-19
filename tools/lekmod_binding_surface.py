@@ -24,10 +24,11 @@ import os
 import re
 import sys
 
-DEFAULT_CLONE = os.path.expanduser("~/Documents/access-mods/civ-v/Lekmod")
-DEFAULT_SDK = (
-    "C:/Program Files (x86)/Steam/steamapps/common/"
-    "Sid Meier's Civilization V SDK/CvGameCoreSource/CvGameCoreDLL_Expansion2"
+from civ5_paths import find_sdk_source_dir
+
+# The LekMod clone is a sibling checkout beside this repo.
+DEFAULT_CLONE = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "Lekmod"
 )
 LUA_SOURCE_DIRS = ("src/dlc", "src/lekmod")
 # The one file a LekMod deploy replaces wholesale: its vanilla body never
@@ -118,8 +119,10 @@ def called_names(root):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--clone", default=DEFAULT_CLONE)
-    parser.add_argument("--sdk", default=DEFAULT_SDK)
+    parser.add_argument("--sdk", default=None, help="SDK CvGameCoreDLL_Expansion2 dir (default: found via Steam)")
     args = parser.parse_args()
+    if args.sdk is None:
+        args.sdk = os.path.join(find_sdk_source_dir(), "CvGameCoreDLL_Expansion2")
 
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     clone_core = os.path.join(args.clone, "LEKMOD_DLL", "CvGameCoreDLL_Expansion2")

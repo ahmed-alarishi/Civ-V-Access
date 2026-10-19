@@ -21,9 +21,10 @@ from collections import defaultdict
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
-CIV_ROOT = Path(
-    r"C:\Program Files (x86)\Steam\steamapps\common\Sid Meier's Civilization V\Assets"
-)
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools"))
+from civ5_paths import find_game_dir  # noqa: E402
+
+CIV_ROOT = Path(find_game_dir()) / "Assets"
 
 # Hard length cap. UI labels are tiny; tooltips can run longer but a 120-char
 # ceiling lets us catch short hints while filtering pedia paragraphs.

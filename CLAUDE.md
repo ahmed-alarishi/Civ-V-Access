@@ -53,6 +53,8 @@ Daily iteration when only Lua / DLC payload changed: `./deploy.ps1`. After touch
 
 The engine fork toolchain (VC9 + Windows SDK 7.0) is set up by `build/sdk7-install/install.cmd`, which the maintainer runs once after downloading the SDK 7.0 ISO. Contributors who only want to deploy can skip that and use the prebuilt engine DLL.
 
+Never hardcode a machine path in a script or doc. The scripts find everything themselves through `tools/civ5-paths.ps1` (PowerShell) and `tools/civ5_paths.py` (Python): the game and the SDK via Steam's registry and library folders, the Documents tree via the shell's Documents folder (honors redirection), the VC9 / SDK 7.0 toolchain under Program Files (x86), LLVM from PATH or Program Files, and the Community-Patch-DLL and Lekmod clones as siblings of this repo. Overrides: `CIV5_DIR` (game), `CIV5_SDK_DIR` (SDK install root), `VC9_ROOT` / `WINSDK7_ROOT` (toolchain), or each script's path parameter. `py tools/civ5_paths.py` prints what this machine resolves to.
+
 When a build fails on a Lua API or engine behavior, look it up in `docs/llm-docs/` or read the game's own UI Lua under `Sid Meier's Civilization V\Assets\` before guessing. The SDK's `Civ5LuaAPI.html` is an unfinished stub; the grep-extracted reference in `docs/llm-docs/lua-api/` supersedes it.
 
 ## Project Structure

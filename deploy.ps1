@@ -62,8 +62,7 @@
 
 .PARAMETER LekModClone
     LekMod clone supplying the prebaked DLC for the lekmod state (both profiles
-    install it). Defaults to the sibling directory next to this repo
-    (~/Documents/access-mods/civ-v/Lekmod).
+    install it). Defaults to the Lekmod directory beside this repo.
 
 .PARAMETER SkipProxy
     Skip the proxy stack and the legacy lua51 rename (blind only).
@@ -118,7 +117,7 @@ $dlcBackupDirName   = "$dlcName.backup"
 $installManifestName = 'CivVAccess.install.json'
 $manifestFile       = 'CivVAccess_2.Civ5Pkg'               # the functional fake-DLC manifest (sighted ships just this)
 $legacyDlcDirs      = @('CivVAccess')
-$legacyModDir       = Join-Path $env:USERPROFILE "Documents\My Games\Sid Meier's Civilization 5\MODS\Civ-V-Access (v 1)"
+$legacyModDir       = Join-Path (Get-Civ5DocsDir) 'MODS\Civ-V-Access (v 1)'
 $ourDlcPriority     = 350                                  # beats the modpack / LekMod packages' 300
 $engineDllName      = 'CvGameCore_Expansion2.dll'
 
@@ -129,7 +128,7 @@ if ([string]::IsNullOrWhiteSpace($LekModClone)) {
     $LekModClone = Join-Path (Split-Path -Parent $repoRoot) 'Lekmod'
 }
 
-$civ5DocsDir = Join-Path $env:USERPROFILE "Documents\My Games\Sid Meier's Civilization 5"
+$civ5DocsDir = Get-Civ5DocsDir
 
 $versionsFile = Join-Path $repoRoot 'versions.json'
 if (-not (Test-Path $versionsFile)) { throw "versions.json missing at $versionsFile" }

@@ -35,13 +35,13 @@ One edit: `src/dlc/UI/Shared/CivVAccess_StringsLoader.lua`. Uncomment the `<LOCA
 
 ## Game baseline (already on disk)
 
-Civ V's localized XML data for the target locale lives at these paths. Filesystem is case-insensitive on Windows; the on-disk casing varies (most locales uppercase, `zh_Hant_HK` mixed-case). Glob case-insensitively with the locale code as written.
+Civ V's localized XML data for the target locale lives at these paths under `<GAME>`, the Civ V install directory (`py tools/civ5_paths.py` prints it; pass the resolved path to any subagent). Filesystem is case-insensitive on Windows; the on-disk casing varies (most locales uppercase, `zh_Hant_HK` mixed-case). Glob case-insensitively with the locale code as written.
 
-- `C:/Program Files (x86)/Steam/steamapps/common/Sid Meier's Civilization V/Assets/Gameplay/XML/NewText/<LOCALE>/*.xml`
-- `C:/Program Files (x86)/Steam/steamapps/common/Sid Meier's Civilization V/Assets/DLC/*/Gameplay/XML/Text/<LOCALE>/*.xml`
-- `C:/Program Files (x86)/Steam/steamapps/common/Sid Meier's Civilization V/Assets/DLC/Expansion/Gameplay/XML/Text/<LOCALE>/*.xml`
-- `C:/Program Files (x86)/Steam/steamapps/common/Sid Meier's Civilization V/Assets/DLC/Expansion2/Gameplay/XML/Text/<LOCALE>/*.xml`
-- `C:/Program Files (x86)/Steam/steamapps/common/Sid Meier's Civilization V/Assets/DLC/Shared/Gameplay/XML/Text/<LOCALE>/*.xml`
+- `<GAME>/Assets/Gameplay/XML/NewText/<LOCALE>/*.xml`
+- `<GAME>/Assets/DLC/*/Gameplay/XML/Text/<LOCALE>/*.xml`
+- `<GAME>/Assets/DLC/Expansion/Gameplay/XML/Text/<LOCALE>/*.xml`
+- `<GAME>/Assets/DLC/Expansion2/Gameplay/XML/Text/<LOCALE>/*.xml`
+- `<GAME>/Assets/DLC/Shared/Gameplay/XML/Text/<LOCALE>/*.xml`
 
 XML format: `<Row Tag="TXT_KEY_X"><Text>Localized text</Text></Row>` inside `<Language_<LOCALE>>`. Grep on the `Tag` attribute.
 

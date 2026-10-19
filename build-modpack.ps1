@@ -51,35 +51,11 @@ if ([string]::IsNullOrWhiteSpace($ClonePath)) {
     $ClonePath = Join-Path (Split-Path -Parent $repoRoot) 'Community-Patch-DLL'
 }
 
-$civ5DocsDir = Join-Path $env:USERPROFILE "Documents\My Games\Sid Meier's Civilization 5"
+. (Join-Path $repoRoot 'tools\civ5-paths.ps1')
+
+$civ5DocsDir = Get-Civ5DocsDir
 if ([string]::IsNullOrWhiteSpace($CacheDir)) {
     $CacheDir = Join-Path $civ5DocsDir 'cache'
-}
-
-function Resolve-CivVInstallDir {
-    param([string]$ExplicitPath)
-    $appName = "Sid Meier's Civilization V"
-    $candidates = @()
-    if ($ExplicitPath) { $candidates += $ExplicitPath }
-    if ($env:CIV5_DIR) { $candidates += $env:CIV5_DIR }
-    try {
-        $steam = Get-ItemProperty -Path 'HKCU:\Software\Valve\Steam' -ErrorAction Stop
-        if ($steam.SteamPath) {
-            $sp = ($steam.SteamPath -replace '/', '\').TrimEnd('\')
-            $candidates += (Join-Path $sp "steamapps\common\$appName")
-            $vdf = Join-Path $sp 'steamapps\libraryfolders.vdf'
-            if (Test-Path $vdf) {
-                foreach ($m in [regex]::Matches((Get-Content -Raw $vdf), '"path"\s*"([^"]+)"')) {
-                    $candidates += (Join-Path ($m.Groups[1].Value -replace '\\\\', '\') "steamapps\common\$appName")
-                }
-            }
-        }
-    } catch { }
-    $candidates += (Join-Path ${env:ProgramFiles(x86)} "Steam\steamapps\common\$appName")
-    foreach ($c in $candidates) {
-        if ($c -and (Test-Path (Join-Path $c 'CivilizationV.exe'))) { return (Resolve-Path $c).Path }
-    }
-    throw "Could not find Civilization V install. Pass -GameDir or set CIV5_DIR."
 }
 
 # ---- driver ----

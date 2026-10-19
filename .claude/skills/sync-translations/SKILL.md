@@ -105,10 +105,10 @@ When dispatching, hand each agent a self-contained brief. Fresh agents have zero
     - Placeholders {N_Tag}: index is positional. You may reorder, you must NOT renumber.
     - No gender-agreement markup. Mod-authored keys bypass engine selectors at runtime; phrase neutrally.
     - Plural-form bundles use the locale's CLDR keywords required by PluralRules.lua. All required forms present, none extra.
-    - For Civ V proper concepts (turn, era, embark, raze, golden age, ally, etc.), grep the base game's <LOCALE> XMLs at:
-        C:/Program Files (x86)/Steam/steamapps/common/Sid Meier's Civilization V/Assets/Gameplay/XML/NewText/<LOCALE>/*.xml
-        C:/Program Files (x86)/Steam/steamapps/common/Sid Meier's Civilization V/Assets/DLC/Expansion/Gameplay/XML/Text/<LOCALE>/*.xml
-        C:/Program Files (x86)/Steam/steamapps/common/Sid Meier's Civilization V/Assets/DLC/Expansion2/Gameplay/XML/Text/<LOCALE>/*.xml
+    - For Civ V proper concepts (turn, era, embark, raze, golden age, ally, etc.), grep the base game's <LOCALE> XMLs at these paths under <GAME>, the Civ V install directory (<orchestrator inserts the path printed by `py tools/civ5_paths.py`>):
+        <GAME>/Assets/Gameplay/XML/NewText/<LOCALE>/*.xml
+        <GAME>/Assets/DLC/Expansion/Gameplay/XML/Text/<LOCALE>/*.xml
+        <GAME>/Assets/DLC/Expansion2/Gameplay/XML/Text/<LOCALE>/*.xml
         and adopt the canonical word the base game uses. Format: <Row Tag="TXT_KEY_X"><Text>localized</Text></Row>.
 
     Diff to apply (JSON):

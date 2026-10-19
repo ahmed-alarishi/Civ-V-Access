@@ -7,7 +7,8 @@
     Dot-sourced by deploy.ps1, stage-vp-modpack-bake.ps1, and
     package-release.ps1 so they never drift on how the modded accessibility
     DLC is built or how the VP substrate is laid down and torn down. Carries
-    two groups of helpers: the install-dir resolver and VP-substrate set
+    two groups of helpers: the install-dir resolver (dot-sourced from
+    civ5-paths.ps1) and VP-substrate set
     (Resolve-CivVInstallDir, Complete-VPInstall, Remove-VpSubstrate,
     Backup-StockExpansionPkg, Resolve-VpAsset, the MODS fork DLL place/restore,
     Enable-DatabaseValidation), and the modded-DLC assembly below. The payload
@@ -35,78 +36,9 @@
 # dot-sourcing script defines what it needs before calling.
 # ---------------------------------------------------------------------------
 
-function Add-CandidateGameDir {
-    param(
-        [System.Collections.Generic.List[string]]$List,
-        [string]$Path
-    )
-    if (-not [string]::IsNullOrWhiteSpace($Path)) {
-        $normalized = $Path.Trim().Trim('"')
-        if (-not [string]::IsNullOrWhiteSpace($normalized) -and -not $List.Contains($normalized)) {
-            $List.Add($normalized)
-        }
-    }
-}
-
-function Resolve-CivVInstallDir {
-    param([string]$ExplicitPath)
-
-    $appName = "Sid Meier's Civilization V"
-    $candidates = New-Object 'System.Collections.Generic.List[string]'
-
-    Add-CandidateGameDir -List $candidates -Path $env:CIV5_DIR
-    Add-CandidateGameDir -List $candidates -Path $ExplicitPath
-
-    $uninstallKeys = @(
-        'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 8930',
-        'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 8930'
-    )
-    foreach ($key in $uninstallKeys) {
-        try {
-            $props = Get-ItemProperty -Path $key -ErrorAction Stop
-            Add-CandidateGameDir -List $candidates -Path $props.InstallLocation
-        } catch { }
-    }
-
-    try {
-        $steam = Get-ItemProperty -Path 'HKCU:\Software\Valve\Steam' -ErrorAction Stop
-        $steamPath = $steam.SteamPath
-        if (-not [string]::IsNullOrWhiteSpace($steamPath)) {
-            $steamPath = ($steamPath -replace '/', '\').TrimEnd('\')
-            Add-CandidateGameDir -List $candidates -Path (Join-Path $steamPath "steamapps\common\$appName")
-
-            $libraryVdf = Join-Path $steamPath 'steamapps\libraryfolders.vdf'
-            if (Test-Path $libraryVdf) {
-                $raw = Get-Content -Raw $libraryVdf
-                $vdfMatches = [regex]::Matches($raw, '"path"\s*"([^"]+)"')
-                foreach ($m in $vdfMatches) {
-                    $libPath = $m.Groups[1].Value -replace '\\\\', '\'
-                    Add-CandidateGameDir -List $candidates -Path (Join-Path $libPath "steamapps\common\$appName")
-                }
-            }
-        }
-    } catch { }
-
-    try {
-        $hklmSteam = Get-ItemProperty -Path 'HKLM:\SOFTWARE\WOW6432Node\Valve\Steam' -ErrorAction Stop
-        if ($hklmSteam -and -not [string]::IsNullOrWhiteSpace($hklmSteam.InstallPath)) {
-            $p = $hklmSteam.InstallPath.TrimEnd('\')
-            Add-CandidateGameDir -List $candidates -Path (Join-Path $p "steamapps\common\$appName")
-        }
-    } catch { }
-
-    Add-CandidateGameDir -List $candidates -Path (Join-Path ${env:ProgramFiles(x86)} "Steam\steamapps\common\$appName")
-
-    foreach ($candidate in $candidates) {
-        $exe = Join-Path $candidate 'CivilizationV.exe'
-        if (Test-Path $exe) {
-            return (Resolve-Path $candidate).Path
-        }
-    }
-
-    $searched = if ($candidates.Count -gt 0) { $candidates -join '; ' } else { '<none>' }
-    throw "Could not find Civilization V install directory. Pass -GameDir or set CIV5_DIR. Searched: $searched"
-}
+# Install-dir resolution (Resolve-CivVInstallDir, Get-Civ5DocsDir, ...) lives in
+# civ5-paths.ps1; dot-sourcing it here hands it to every dlc-assembly caller.
+. (Join-Path $PSScriptRoot 'civ5-paths.ps1')
 
 # VP-completion assets come from build/vp-runtime when pre-staged there, else the
 # maintainer's Community-Patch-DLL clone. The pre-staged path lets a tester run

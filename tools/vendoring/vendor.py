@@ -44,19 +44,12 @@ MANIFEST_PATH = os.path.join(SCRIPT_DIR, "manifest.json")
 
 VENDOR_EXTS = (".lua", ".xml")
 
-DEFAULT_GAME_DIR = (
-    r"C:\Program Files (x86)\Steam\steamapps\common\Sid Meier's Civilization V"
-)
+sys.path.insert(0, os.path.dirname(SCRIPT_DIR))
+from civ5_paths import civ5_docs_dir, find_game_dir  # noqa: E402
 
 
 def default_mods_dir():
-    return os.path.join(
-        os.path.expanduser("~"),
-        "Documents",
-        "My Games",
-        "Sid Meier's Civilization 5",
-        "MODS",
-    )
+    return os.path.join(civ5_docs_dir(), "MODS")
 
 
 def default_clone_dir():
@@ -775,8 +768,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument(
         "--game",
-        default=os.environ.get("CIV5_DIR", DEFAULT_GAME_DIR),
-        help="Civ V install directory",
+        default=None,
+        help="Civ V install directory (default: CIV5_DIR, else found via Steam)",
     )
     sub = ap.add_subparsers(dest="cmd", required=True)
 
@@ -810,6 +803,7 @@ def main():
     )
 
     args = ap.parse_args()
+    args.game = find_game_dir(args.game)
     try:
         if args.cmd == "bootstrap":
             cmd_bootstrap(args)
