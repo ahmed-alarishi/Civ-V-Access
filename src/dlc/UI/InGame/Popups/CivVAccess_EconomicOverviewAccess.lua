@@ -1929,8 +1929,10 @@ if type(ContextPtr) == "table" and type(ContextPtr.SetShowHideHandler) == "funct
         -- TabbedShell.menuTab time, so without this refresh the row's
         -- presence would freeze at install state and never reflect a
         -- between-turn flip from surplus to deficit (or back).
-        onShow = function()
-            if m_goldTab ~= nil then
+        -- Skipped when _initialized survived the hide (a Ctrl+I pedia round
+        -- trip), which would otherwise collapse a drill-in to its group.
+        onShow = function(handler)
+            if m_goldTab ~= nil and not handler._initialized then
                 m_goldTab.menu().setItems(buildGoldItems())
             end
         end,

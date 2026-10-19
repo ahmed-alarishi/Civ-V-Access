@@ -1158,8 +1158,13 @@ if type(ContextPtr) == "table" and type(ContextPtr.SetShowHideHandler) == "funct
         initialTabIndex = 1,
         priorInput = priorInput,
         priorShowHide = priorShowHide,
-        onShow = function(_handler)
-            rebuildAllTabs()
+        onShow = function(handler)
+            -- _initialized survives the hide only on a Ctrl+I pedia round
+            -- trip (from a Diplomat / Trade Deals sub, which install seats us
+            -- back beneath); keep the place the user opened them from.
+            if not handler._initialized then
+                rebuildAllTabs()
+            end
         end,
     })
 

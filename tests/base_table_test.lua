@@ -671,6 +671,22 @@ function M.test_clearSearchIfActive_clears_filter_and_keeps_place()
     T.truthy(sawCleared, "spoke 'search cleared'")
 end
 
+-- Tab-away and the Ctrl+I pedia hide both run onTabDeactivated. Dropping the
+-- filter there must relocate the cursor like a spoken clear, and silently, so
+-- coming back lands on the row the user was on rather than its filtered index.
+function M.test_tab_deactivate_drops_filter_and_keeps_place_silently()
+    setup()
+    local h = BaseTable.create(makeMultiMatchSpec())
+    h.onTabActivated(h, false)
+    h.handleSearchInput(h, 0x4D, 0) -- 'm'
+    h.handleSearchInput(h, 0x4F, 0) -- 'o' -> Moscow (filtered row 1)
+    speaks = {}
+    h.onTabDeactivated()
+    T.eq(h._filterQuery, "", "filter dropped")
+    T.eq(h._row, 3, "cursor relocated to Moscow's full-table index")
+    T.eq(#speaks, 0, "deactivation speaks nothing")
+end
+
 function M.test_arrow_after_clear_announces_full_row()
     setup()
     local h = BaseTable.create(makeMultiMatchSpec())

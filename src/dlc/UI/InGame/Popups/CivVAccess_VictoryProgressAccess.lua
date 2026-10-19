@@ -1160,14 +1160,17 @@ if type(ContextPtr) == "table" and type(ContextPtr.SetShowHideHandler) == "funct
         -- percents) updates between turns; without this rebuild each open
         -- the items would freeze at install state. Tab 1 (BaseTable) self-
         -- refreshes via rebuildRows on every nav event.
-        onShow = function()
+        onShow = function(handler)
             -- Clear any armed kick so a stale first-press from a prior open
             -- can never commit on the next Enter.
             m_armedKickId = nil
             -- Re-evaluate the host-only kick column each open so a mid-game
             -- host migration is reflected without waiting for a Context reload.
             scoreTab.refreshColumns(buildScoreColumns())
-            if m_victoriesTab ~= nil then
+            -- _initialized survives the hide only on a Ctrl+I pedia round
+            -- trip; rebuilding then would collapse a drill-in to the
+            -- section heading.
+            if m_victoriesTab ~= nil and not handler._initialized then
                 m_victoriesTab.menu().setItems(buildVictoriesItems())
             end
         end,

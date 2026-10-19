@@ -866,4 +866,25 @@ function M.test_install_pedia_transit_preserves_active_tab_across_hide_then_reop
     T.truthy(handler._initialized, "_initialized preserved so re-show takes re-activation branch")
 end
 
+-- A sub pushed above the shell (espionage Diplomat / Trade Deals) outlives the
+-- pedia trip's hide; the re-show seats the shell back beneath it.
+function M.test_install_pedia_transit_reseats_shell_beneath_open_sub()
+    setup()
+    local ctx = makeInstallCtx()
+    local handler = TabbedShell.install(ctx, {
+        name = "X",
+        displayName = "TestScreen",
+        tabs = { stubTab({ tabName = "TXT_KEY_CIVVACCESS_TS_TAB_A" }) },
+    })
+    ctx._sh(false, false)
+    local sub = { name = "Sub", bindings = {}, helpEntries = {} }
+    HandlerStack.push(sub)
+    civvaccess_shared.pediaTransitArmed = true
+    ctx._sh(true, false)
+    civvaccess_shared.pediaTransitArmed = nil
+    ctx._sh(false, false)
+    T.eq(HandlerStack.active(), sub, "sub still on top after the re-show")
+    T.eq(HandlerStack.at(HandlerStack.count() - 1), handler, "shell seated directly beneath the sub")
+end
+
 return M

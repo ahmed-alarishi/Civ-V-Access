@@ -599,6 +599,20 @@ function TabbedShell.install(ContextPtr, spec)
     })
     rebuildExposed(handler)
 
+    -- Sub-handlers above the shell when a Ctrl+I pedia trip hid it; see
+    -- BaseMenu.install's transitSubs.
+    local transitSubs = nil
+
+    local function pushHandler()
+        local subs = transitSubs
+        transitSubs = nil
+        if subs ~= nil and #subs > 0 then
+            HandlerStack.pushBeneath(handler, subs)
+        else
+            HandlerStack.push(handler)
+        end
+    end
+
     local function runDeferredPush()
         if not pendingPush then
             return
@@ -607,7 +621,7 @@ function TabbedShell.install(ContextPtr, spec)
         if ContextPtr:IsHidden() then
             return
         end
-        HandlerStack.push(handler)
+        pushHandler()
     end
 
     local function resetTabsForNextOpen()
@@ -640,6 +654,9 @@ function TabbedShell.install(ContextPtr, spec)
                 reactivate = false
             end
         end
+        if bIsHide then
+            transitSubs = civvaccess_shared.pediaTransitArmed and HandlerStack.above(handler.name) or nil
+        end
         HandlerStack.removeByName(handler.name, reactivate)
         if bIsHide then
             -- See CivVAccess_BaseMenuInstall.lua for the pediaTransitArmed
@@ -669,7 +686,7 @@ function TabbedShell.install(ContextPtr, spec)
             end
             TickPump.runOnce(runDeferredPush)
         else
-            HandlerStack.push(handler)
+            pushHandler()
         end
     end)
 

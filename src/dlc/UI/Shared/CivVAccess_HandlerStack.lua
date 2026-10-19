@@ -423,6 +423,46 @@ function HandlerStack.insertAt(handler, idx)
     return true
 end
 
+-- Handlers stacked above the topmost one named `name`, bottom to top. Empty
+-- when it is the top or not on the stack.
+function HandlerStack.above(name)
+    local out = {}
+    for i = #_shared.stack, 1, -1 do
+        if _shared.stack[i].name == name then
+            for j = i + 1, #_shared.stack do
+                out[#out + 1] = _shared.stack[j]
+            end
+            break
+        end
+    end
+    return out
+end
+
+-- Seat handler just beneath the lowest of `subs` still on the stack, or push
+-- it when none survive. Used by the installs to return a screen under the
+-- sub-menus it had open before a Ctrl+I pedia round trip hid it: the subs
+-- outlive the hide, and a plain push would bury them under the screen.
+-- Inserting below the top fires no onActivate, so the sub the user is in
+-- stays active and silent.
+function HandlerStack.pushBeneath(handler, subs)
+    local idx = nil
+    for i = 1, #_shared.stack do
+        for _, sub in ipairs(subs) do
+            if _shared.stack[i] == sub then
+                idx = i
+                break
+            end
+        end
+        if idx ~= nil then
+            break
+        end
+    end
+    if idx == nil then
+        return HandlerStack.push(handler)
+    end
+    return HandlerStack.insertAt(handler, idx)
+end
+
 function HandlerStack.pop()
     local n = #_shared.stack
     if n == 0 then

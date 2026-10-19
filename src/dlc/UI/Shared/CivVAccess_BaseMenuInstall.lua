@@ -44,9 +44,23 @@ function BaseMenu.install(ContextPtr, spec)
     local onEscape = spec.onEscape
     local suppressReactivateOnHide = spec.suppressReactivateOnHide
     local pendingPush = false
+    -- Sub-handlers (drawers, pickers) that sat above us when a Ctrl+I pedia
+    -- trip hid us. They stay on the stack through the trip; the next show
+    -- seats us back beneath them instead of on top. nil outside a trip.
+    local transitSubs = nil
 
     if tickOwner then
         TickPump.install(ContextPtr)
+    end
+
+    local function pushHandler()
+        local subs = transitSubs
+        transitSubs = nil
+        if subs ~= nil and #subs > 0 then
+            HandlerStack.pushBeneath(handler, subs)
+        else
+            HandlerStack.push(handler)
+        end
     end
 
     local function runDeferredPush()
@@ -57,7 +71,7 @@ function BaseMenu.install(ContextPtr, spec)
         if ContextPtr:IsHidden() then
             return
         end
-        HandlerStack.push(handler)
+        pushHandler()
     end
 
     ContextPtr:SetShowHideHandler(function(bIsHide, bIsInit)
@@ -91,6 +105,9 @@ function BaseMenu.install(ContextPtr, spec)
             if ok and suppress then
                 reactivate = false
             end
+        end
+        if bIsHide then
+            transitSubs = civvaccess_shared.pediaTransitArmed and HandlerStack.above(handler.name) or nil
         end
         HandlerStack.removeByName(handler.name, reactivate)
         if bIsHide then
@@ -128,7 +145,7 @@ function BaseMenu.install(ContextPtr, spec)
             end
             TickPump.runOnce(runDeferredPush)
         else
-            HandlerStack.push(handler)
+            pushHandler()
         end
     end)
 

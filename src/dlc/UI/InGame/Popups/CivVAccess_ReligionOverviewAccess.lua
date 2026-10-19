@@ -627,8 +627,13 @@ if type(ContextPtr) == "table" and type(ContextPtr.SetShowHideHandler) == "funct
         initialTabIndex = 1,
         priorInput = priorInput,
         priorShowHide = priorShowHide,
-        onShow = function(_handler)
-            rebuildAllTabs()
+        onShow = function(handler)
+            -- _initialized survives the hide only on a Ctrl+I pedia round
+            -- trip; rebuilding then would collapse a drill-in to the
+            -- religion heading.
+            if not handler._initialized then
+                rebuildAllTabs()
+            end
         end,
     })
 

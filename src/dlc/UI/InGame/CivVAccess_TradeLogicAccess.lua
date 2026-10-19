@@ -621,7 +621,12 @@ function TradeLogicAccess.install(ContextPtr, priorInput, priorShowHide, descrip
         suppressReactivateOnHide = descriptor.suppressReactivateOnHide,
         onShow = function(h)
             _handler = h
-            _drawerHandler = nil
+            -- _initialized survives the hide only on a Ctrl+I pedia round
+            -- trip, where an open drawer stays on the stack and install
+            -- seats us back beneath it; keep pointing rebuilds at it.
+            if not h._initialized then
+                _drawerHandler = nil
+            end
             -- Seed the valuation baseline without speaking so the first deal
             -- change (not the screen open) is what triggers the announce.
             _lastValuation = dealValuationText()
@@ -645,7 +650,10 @@ function TradeLogicAccess.install(ContextPtr, priorInput, priorShowHide, descrip
             pcall(priorDeactivate)
         end
         _handler = nil
-        _drawerHandler = nil
+        -- A pedia trip leaves the drawer open on the stack (onShow above).
+        if not civvaccess_shared.pediaTransitArmed then
+            _drawerHandler = nil
+        end
         _lastValuation = nil
     end
 

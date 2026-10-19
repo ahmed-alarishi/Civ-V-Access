@@ -727,8 +727,13 @@ mainHandler = BaseMenu.install(ContextPtr, {
         end
         handler.setInitialTabIndex(_openToIdeologyTab and TAB_IDEOLOGY or TAB_POLICIES)
         _openToIdeologyTab = false
-        handler.setItems(buildPoliciesTabItems(), TAB_POLICIES)
-        handler.setItems(buildIdeologyTabItems(), TAB_IDEOLOGY)
+        -- _initialized survives the hide only on a Ctrl+I pedia round trip;
+        -- rebuilding then would collapse the user's drill-in to the branch /
+        -- level heading. Data changes still land through EventPoliciesDirty.
+        if not handler._initialized then
+            handler.setItems(buildPoliciesTabItems(), TAB_POLICIES)
+            handler.setItems(buildIdeologyTabItems(), TAB_IDEOLOGY)
+        end
     end,
     tabs = {
         {

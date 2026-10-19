@@ -1578,17 +1578,24 @@ if type(ContextPtr) == "table" and type(ContextPtr.SetShowHideHandler) == "funct
         initialTabIndex = 1,
         priorInput = priorInput,
         priorShowHide = priorShowHide,
-        onShow = function(_handler)
+        onShow = function(handler)
+            -- _initialized survives the hide only on a Ctrl+I pedia round
+            -- trip. That is the same session, not a new open, so keep the
+            -- in-flight selection and the item lists (a rebuild would
+            -- collapse a drill-in to the city heading).
+            local pediaReturn = handler._initialized
             -- Reset transient mod-side state on every open so a previous
             -- session's in-flight selection (move source, swap target)
             -- doesn't bleed into the new view. Tab 4's perspective is the
             -- engine's g_iSelectedPlayerID; the engine itself does not
             -- reset it on popup close, so a sighted player's perspective
             -- pick persists across reopen — we mirror that.
-            m_gwMoveSource = nil
-            m_swapTheirItem = -1
-            m_swapTradingPartner = -1
-            m_influenceMode = 0
+            if not pediaReturn then
+                m_gwMoveSource = nil
+                m_swapTheirItem = -1
+                m_swapTradingPartner = -1
+                m_influenceMode = 0
+            end
             -- Force the engine's per-type swap pulldowns
             -- (YourWriting/Art/Artifact) to populate even when the user
             -- doesn't visually land on the SwapGreatWorks panel. priorShowHide
@@ -1606,8 +1613,10 @@ if type(ContextPtr) == "table" and type(ContextPtr.SetShowHideHandler) == "funct
                     Log.error("CultureOverview: swap pulldown prefetch failed: " .. tostring(err))
                 end
             end
-            m_yourCultureTab.menu().setItems(buildYourCultureItems())
-            m_swapTab.menu().setItems(buildSwapItems())
+            if not pediaReturn then
+                m_yourCultureTab.menu().setItems(buildYourCultureItems())
+                m_swapTab.menu().setItems(buildSwapItems())
+            end
             -- Tabs 3 and 4 are BaseTables; rebuildRows reruns on every nav,
             -- so onShow doesn't need to push rows. resetForNextOpen on hide
             -- is wired by TabbedShell so the next open lands at the header.

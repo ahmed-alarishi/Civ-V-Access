@@ -81,6 +81,9 @@ local function buildItems()
             controlName = "Civilopedia_List",
             textKey = concept.CivilopediaPageText,
             activate = function()
+                -- The pedia hides this popup; arm the transit flag so the
+                -- hide keeps our cursor (see BaseMenuCore's Ctrl+I).
+                civvaccess_shared.pediaTransitArmed = true
                 OnCivilopediaListClicked()
             end,
         })
@@ -90,6 +93,7 @@ local function buildItems()
         controlName = "Civilopedia",
         textKey = "TXT_KEY_ADVISORINFOPOPUP_CIVILOPEDIA",
         activate = function()
+            civvaccess_shared.pediaTransitArmed = true
             OnCivilopediaClicked()
         end,
     })

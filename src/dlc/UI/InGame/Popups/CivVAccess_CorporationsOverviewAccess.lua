@@ -788,11 +788,19 @@ if type(ContextPtr) == "table" and type(ContextPtr.SetShowHideHandler) == "funct
     -- Decorate each tab's activation: drive the vendor's tab button and
     -- view pulldown first (visual sync for a sighted spectator), rebuild
     -- the menu tabs' items, then run the tab's own lifecycle speech.
+    -- The shell also re-activates the current tab when a sub (? help) pops
+    -- or after a Ctrl+I pedia round trip; those keep the items so the user
+    -- returns to the item they were on instead of its group heading.
+    -- lastActivatedTab tells a re-entry from a real tab change; onShow
+    -- clears it on each fresh open.
+    local lastActivatedTab = nil
     local function decorate(tab, syncFn, rebuildFn)
         local baseActivated = tab.onTabActivated
         tab.onTabActivated = function(self, announce)
             Log.tryCall("CorporationsOverview panel sync '" .. tostring(tab.tabName) .. "'", syncFn)
-            if rebuildFn ~= nil then
+            local reentry = lastActivatedTab == tab
+            lastActivatedTab = tab
+            if rebuildFn ~= nil and not reentry then
                 local ok, items = pcall(rebuildFn)
                 if ok then
                     tab.menu().setItems(items)
@@ -831,5 +839,11 @@ if type(ContextPtr) == "table" and type(ContextPtr.SetShowHideHandler) == "funct
         initialTabIndex = 1,
         priorInput = priorInput,
         priorShowHide = priorShowHide,
+        onShow = function(handler)
+            -- _initialized survives the hide only on a pedia round trip.
+            if not handler._initialized then
+                lastActivatedTab = nil
+            end
+        end,
     })
 end

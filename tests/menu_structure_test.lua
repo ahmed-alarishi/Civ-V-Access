@@ -1121,6 +1121,27 @@ function M.test_pedia_transit_preserves_level_across_hide_then_reopen()
     T.truthy(handler._initialized, "_initialized preserved so re-show takes re-activation branch")
 end
 
+-- A sub the screen pushed (trade drawer, picker) outlives the pedia trip's
+-- hide. The re-show must seat the screen back beneath it, not bury it: a
+-- plain push would leave the sub orphaned under the screen, active again
+-- once the screen closes.
+function M.test_pedia_transit_reseats_screen_beneath_open_sub()
+    setup()
+    setCtrls({ "CHILD" })
+    local ctx = makeContextPtr()
+    local handler = BaseMenu.install(ctx, { name = "T", displayName = "Screen", items = { buttonItem("CHILD", "C") } })
+    ctx._sh(false, false)
+    local sub = BaseMenu.create({ name = "Sub", displayName = "Sub", items = { buttonItem("CHILD", "C") } })
+    HandlerStack.push(sub)
+    civvaccess_shared.pediaTransitArmed = true
+    ctx._sh(true, false)
+    civvaccess_shared.pediaTransitArmed = nil
+    T.eq(HandlerStack.active(), sub, "sub survives the hide")
+    ctx._sh(false, false)
+    T.eq(HandlerStack.active(), sub, "sub still on top after the re-show")
+    T.eq(HandlerStack.at(HandlerStack.count() - 1), handler, "screen seated directly beneath the sub")
+end
+
 -- Type-ahead search ------------------------------------------------------
 
 local function installForSearch(labelledItems)

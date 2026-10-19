@@ -532,12 +532,10 @@ local function applyFilter(self)
     speakCell(self, true)
 end
 
--- Clear the filter, keeping the cursor on the same row where it can: the
--- focused row object is relocated in the now-full list, falling back to its
--- clamped numeric index when identity can't be matched. Speaks the shared
--- "search cleared" line and does not re-announce the row -- matching
--- BaseMenu's clear, which leaves the cursor where it sits.
-local function clearFilter(self)
+-- Drop the filter silently, keeping the cursor on the same row where it can:
+-- the focused row object is relocated in the now-full list, falling back to
+-- its clamped numeric index when identity can't be matched.
+local function dropFilter(self)
     local focused = nil
     if self._row >= 1 then
         focused = buildRows(self)[self._row]
@@ -561,6 +559,13 @@ local function clearFilter(self)
     -- column name when the new position happens to match the stale baseline.
     self._lastSpokenRow = self._row
     self._lastSpokenCol = self._col
+end
+
+-- Clear the filter, keeping the cursor on the same row (dropFilter). Speaks
+-- the shared "search cleared" line and does not re-announce the row --
+-- matching BaseMenu's clear, which leaves the cursor where it sits.
+local function clearFilter(self)
+    dropFilter(self)
     SpeechPipeline.speakInterrupt(Text.key("TXT_KEY_CIVVACCESS_SEARCH_CLEARED"))
 end
 
@@ -894,8 +899,13 @@ function BaseTable.create(spec)
         self._chainSpeech = nil
     end
 
+    -- Leaving the tab (Tab away, or the hide a Ctrl+I pedia trip fires)
+    -- drops the filter but keeps the cursor on the focused row, so the user
+    -- comes back to the row they were on rather than its filtered index.
     function self.onTabDeactivated()
-        self._filterQuery = ""
+        if self._filterQuery ~= "" then
+            dropFilter(self)
+        end
     end
 
     -- Replace the column set on the fly. For a column whose presence depends

@@ -98,7 +98,14 @@ BaseMenu.install(ContextPtr, {
     priorShowHide = priorShowHide,
     shouldActivate = DiploCommon.shouldActivate,
     onShow = function(h)
-        h.setItems(buildItems())
+        -- The pedia hides DiploOverview without firing this panel's hide,
+        -- so _initialized is still true when the parent re-shows us after
+        -- a Ctrl+I round trip; rebuilding then would collapse a drill-in to
+        -- the group heading. Real closes and tab switches hide the panel,
+        -- which clears it.
+        if not h._initialized then
+            h.setItems(buildItems())
+        end
     end,
     items = {},
     onTab = function()

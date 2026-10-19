@@ -441,6 +441,9 @@ local function openPediaForCurrent()
     if cur == nil then
         return
     end
+    -- Arm the shared pedia-transit flag (see BaseMenuCore's Ctrl+I) so the
+    -- hide the pedia triggers keeps the cursor instead of tearing it down.
+    civvaccess_shared.pediaTransitArmed = true
     Events.SearchForPediaEntry(Text.key(cur.Description))
 end
 
@@ -918,6 +921,23 @@ local function wrappedPriorShowHide(bIsHide, bIsInit)
         return
     end
     if bIsHide then
+        -- Ctrl+I -> pedia hides us only to show the pedia on top; keep the
+        -- cursor and mode so Esc out of the pedia lands back where the user
+        -- was (TabbedShell skips its tab reset on the same flag). From the
+        -- results overlay, seat the cursor on the looked-up match first: the
+        -- overlay can't survive the round trip, since the shell re-pushes
+        -- above wherever it sat on the stack.
+        if civvaccess_shared.pediaTransitArmed then
+            if _searchMenu ~= nil then
+                local it = _searchMenu.currentItem()
+                if it ~= nil and it._techRow ~= nil then
+                    seatCursorSilent(it._techRow)
+                end
+            end
+            HandlerStack.removeByName(SEARCH_MENU_NAME, false)
+            _searchMenu = nil
+            return
+        end
         -- Drop the results overlay if the screen closes while it is open
         -- (F6 from within it, an engine-driven close, load-from-game). Its
         -- onDeactivate clears the search; reactivate=false so the shell
@@ -982,7 +1002,11 @@ TabbedShell.install(ContextPtr, {
         else
             handler.displayName = Text.key("TXT_KEY_CIVVACCESS_SCREEN_TECH_TREE")
         end
-        setupForShow()
+        -- A cursor that survived the hide means this show is the return from
+        -- a Ctrl+I pedia trip; keep it rather than re-picking the landing.
+        if _cursor == nil then
+            setupForShow()
+        end
     end,
     onEscape = function(handler)
         local tab = handler.activeTab()

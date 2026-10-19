@@ -804,8 +804,10 @@ TabbedShell.install(ContextPtr, {
     -- Refresh GP items each open so subgroups reflect current per-city
     -- progress (sub-list visibility hinges on >0 progress; a great-
     -- person resolution between opens can empty out a subgroup).
-    onShow = function()
-        if m_greatPeopleTab ~= nil then
+    -- _initialized survives the hide only on a Ctrl+I pedia round trip;
+    -- rebuilding then would collapse a drill-in to the specialist heading.
+    onShow = function(handler)
+        if m_greatPeopleTab ~= nil and not handler._initialized then
             m_greatPeopleTab.menu().setItems(buildGreatPeopleItems())
         end
     end,
