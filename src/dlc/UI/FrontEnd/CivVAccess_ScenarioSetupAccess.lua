@@ -14,7 +14,7 @@
 -- difficulty commits through DifficultySelected with the on-screen entry the
 -- vendor override promotes onto g_CivVAccessDifficultyButtons, so the
 -- highlight moves with the choice. Start is an anonymous base callback,
--- reached through PullDownProbe's capture.
+-- captured by the ProbeBoot the vendor override runs ahead of the base file.
 
 include("CivVAccess_FrontendCommon")
 include("CivVAccess_CivDetails")
@@ -23,27 +23,8 @@ include("CivVAccess_PullDownProbe")
 local SIDE_CHOOSER = "ScenarioSetup/Civilization"
 local DIFFICULTY_CHOOSER = "ScenarioSetup/Difficulty"
 
--- No Playable filter: a scenario side need not be playable outside its
--- scenario. Same row shape SelectCivilization's scenario mode hands
--- CivDetails.richLabel.
-local sideQuery = DB.CreateQuery([[SELECT
-    Civilizations.ID,
-    Civilizations.Type,
-    Civilizations.ShortDescription,
-    Leaders.Type AS LeaderType,
-    Leaders.Description AS LeaderDescription
-    FROM Civilizations, Leaders, Civilization_Leaders WHERE
-    Civilizations.Type = ? AND
-    Civilizations.Type = Civilization_Leaders.CivilizationType AND
-    Leaders.Type = Civilization_Leaders.LeaderheadType LIMIT 1]])
-
 local function civilizationLabel()
-    local title = Text.controlText(Controls.Title, "ScenarioSetup Title") or ""
-    local bonus = Text.controlText(Controls.BonusDescription, "ScenarioSetup BonusDescription") or ""
-    if bonus ~= "" then
-        return title .. ", " .. bonus
-    end
-    return title
+    return CivDetails.setupButtonLabel("ScenarioSetup")
 end
 
 local function chooseSide(slot)
@@ -67,7 +48,8 @@ local function openSideChooser()
     local initialIndex = 1
     local sides = {}
     for slot, civType in pairs(ktScenarioCivilizations) do
-        for row in sideQuery(civType) do
+        local row = CivDetails.rowForType(civType)
+        if row ~= nil then
             sides[#sides + 1] = { name = Text.key(row.LeaderDescription), row = row, slot = slot }
         end
     end

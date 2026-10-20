@@ -105,23 +105,28 @@ function CivDetails.richLabel(row)
     return table.concat(parts, ", ")
 end
 
--- Every playable civilization, one row carrying the fields richLabel needs,
--- ordered by localized leader name. The join drops civs with no leader, which
--- is how the game's own civ pulldowns build their list, so screens that offer
--- a civ choice all offer the same set.
+-- One row per civ-leader pair, carrying the fields richLabel needs. The join
+-- drops civs with no leader, which is how the game's own civ pulldowns build
+-- their list. Callers append their own AND clauses.
+local CIV_ROWS_SQL = [[SELECT
+    Civilizations.ID,
+    Civilizations.Type,
+    Civilizations.ShortDescription,
+    Leaders.Type AS LeaderType,
+    Leaders.Description AS LeaderDescription
+    FROM Civilizations, Leaders, Civilization_Leaders WHERE
+    Civilizations.Type = Civilization_Leaders.CivilizationType AND
+    Leaders.Type = Civilization_Leaders.LeaderheadType]]
+
+-- No Playable filter: a scenario side need not be playable outside its
+-- scenario.
+local rowForTypeQuery = DB.CreateQuery(CIV_ROWS_SQL .. " AND Civilizations.Type = ? LIMIT 1")
+
+-- Every playable civilization, ordered by localized leader name, so screens
+-- that offer a civ choice all offer the same set.
 function CivDetails.playableRows()
-    local sql = [[SELECT
-        Civilizations.ID,
-        Civilizations.Type,
-        Civilizations.ShortDescription,
-        Leaders.Type AS LeaderType,
-        Leaders.Description AS LeaderDescription
-        FROM Civilizations, Leaders, Civilization_Leaders WHERE
-        Civilizations.Type = Civilization_Leaders.CivilizationType AND
-        Leaders.Type = Civilization_Leaders.LeaderheadType AND
-        Civilizations.Playable = 1]]
     local entries = {}
-    for row in DB.Query(sql) do
+    for row in DB.Query(CIV_ROWS_SQL .. " AND Civilizations.Playable = 1") do
         entries[#entries + 1] = { Text.key(row.LeaderDescription), row }
     end
     table.sort(entries, function(a, b)
@@ -132,6 +137,29 @@ function CivDetails.playableRows()
         rows[#rows + 1] = entry[2]
     end
     return rows
+end
+
+-- The row for one civilization type, playable or not, or nil if it has no
+-- leader.
+function CivDetails.rowForType(civType)
+    -- LIMIT 1, so this runs at most once; draining it lets the query finish.
+    local found = nil
+    for row in rowForTypeQuery(civType) do
+        found = row
+    end
+    return found
+end
+
+-- Label for a setup screen's civilization button: the on-screen leader / civ
+-- title, then the bonus line when the screen shows one. logTag names the
+-- screen in the warning Text.controlText logs for a missing control.
+function CivDetails.setupButtonLabel(logTag)
+    local title = Text.controlText(Controls.Title, logTag .. " Title") or ""
+    local bonus = Text.controlText(Controls.BonusDescription, logTag .. " BonusDescription") or ""
+    if bonus ~= "" then
+        return title .. ", " .. bonus
+    end
+    return title
 end
 
 -- Returns the pulldown-ordered label list used by AdvancedSetup's civ

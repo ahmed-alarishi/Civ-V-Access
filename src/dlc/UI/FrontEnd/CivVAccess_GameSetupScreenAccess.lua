@@ -10,6 +10,7 @@
 -- rather than RegisterCheckHandler, so PullDownProbe cannot capture it.
 
 include("CivVAccess_FrontendCommon")
+include("CivVAccess_CivDetails")
 
 local priorShowHide = ShowHideHandler
 local priorInput = InputHandler
@@ -21,12 +22,7 @@ local function labelFromControl(controlName)
 end
 
 local function civilizationLabel()
-    local title = Text.controlText(Controls.Title, "GameSetupScreen Title") or ""
-    local bonus = Text.controlText(Controls.BonusDescription, "GameSetupScreen BonusDescription") or ""
-    if bonus ~= "" then
-        return title .. ", " .. bonus
-    end
-    return title
+    return CivDetails.setupButtonLabel("GameSetupScreen")
 end
 
 BaseMenu.install(ContextPtr, {
