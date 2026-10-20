@@ -279,15 +279,16 @@ end
 -- The running scenario's briefing, named with the scenario's own Briefing
 -- button label. Only in a game whose scenario ScenarioRegistry knows.
 local function scenarioEntries(entries)
-    if not ScenarioBriefing.available() then
+    local scenario = ScenarioRegistry.active()
+    if scenario == nil then
         return
     end
     entries[#entries + 1] = {
         id = "briefing",
-        nameKey = ScenarioBriefing.nameKey(),
+        nameKey = scenario.briefingLabel,
         keyLabel = "TXT_KEY_CIVVACCESS_BRIEFING_HELP_KEY",
         open = function()
-            ScenarioBriefing.open()
+            ScenarioBriefing.open(scenario)
         end,
     }
 end

@@ -5,7 +5,8 @@
 -- split at the game's own line breaks, one heading or paragraph per item, so
 -- the player can arrow to the part they need. Speech only: the scenario's
 -- popup is not opened. Built on every open, and absent (no chord, no help
--- entry, no launch bar row) in games without a supported scenario.
+-- entry, no launch bar row) in games without a supported scenario. Callers
+-- look the scenario up once and pass its ScenarioRegistry entry in.
 
 ScenarioBriefing = {}
 
@@ -13,17 +14,7 @@ local MOD_SHIFT = 1
 
 local MENU_NAME = "ScenarioBriefing"
 
-function ScenarioBriefing.available()
-    return ScenarioRegistry.active() ~= nil
-end
-
--- The scenario's own Briefing button label, naming the launch bar row.
-function ScenarioBriefing.nameKey()
-    return ScenarioRegistry.active().briefingLabel
-end
-
-function ScenarioBriefing.open()
-    local scenario = ScenarioRegistry.active()
+function ScenarioBriefing.open(scenario)
     local paragraphs = {}
     BaseMenuItems.addSections(paragraphs, Text.key(scenario.briefingText))
     local items = {}
@@ -46,7 +37,7 @@ end
 -- (ranged attack, found city, Brazilwood camp), and no mod chord takes
 -- Shift+B.
 function ScenarioBriefing.getBindings()
-    if not ScenarioBriefing.available() then
+    if ScenarioRegistry.active() == nil then
         return { bindings = {}, helpEntries = {} }
     end
     return {
