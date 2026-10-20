@@ -1,3 +1,10 @@
+-- Civ V Access: scenario screen override.
+-- Target: Assets/DLC/Expansion2/Scenarios/CivilWarScenario/CivilWarScenarioLoadScreen.lua.
+-- ProbeBoot runs BEFORE the scenario file so the button probe captures
+-- StartButton's anonymous click handler, which keyboard Start invokes.
+-- Contents below (between ProbeBoot and the bootstrap marker at the bottom)
+-- are a verbatim copy of the scenario file apart from the marked edit.
+include("CivVAccess_ProbeBoot")
 ----------------------------------------------------------------
 -- CivilWarScenarioLoadScreen
 -- Author: antonjs
