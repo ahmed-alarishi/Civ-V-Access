@@ -412,6 +412,7 @@ function BaselineHandler.create()
     local turn = Turn.getBindings()
     local empireStatus = EmpireStatus.getBindings()
     local taskList = TaskList.getBindings()
+    local briefing = ScenarioBriefing.getBindings()
     local bookmarks = Bookmarks.getBindings()
     local beacons = Beacons.getBindings()
     local messageBuffer = MessageBuffer.getBindings()
@@ -420,6 +421,7 @@ function BaselineHandler.create()
     appendAll(bindings, turn.bindings)
     appendAll(bindings, empireStatus.bindings)
     appendAll(bindings, taskList.bindings)
+    appendAll(bindings, briefing.bindings)
     appendAll(bindings, bookmarks.bindings)
     appendAll(bindings, beacons.bindings)
     appendAll(bindings, messageBuffer.bindings)
@@ -440,9 +442,10 @@ function BaselineHandler.create()
     -- 1) tile info (cursor cluster, S/W/X tile queries, 1/2/3 city queries,
     --    Enter, Shift+S coordinates, Ctrl+I pedia),
     -- 2) game info (T/R/G/H/F/P/I empire-status readouts plus Shift+T
-    --    task list) -- grouped right after tile info because both clusters
-    --    answer "tell me about X" in one keystroke; tile info reads the
-    --    cursor's hex, game info reads the empire,
+    --    task list and Shift+B scenario briefing) -- grouped right after
+    --    tile info because both clusters answer "tell me about X" in one
+    --    keystroke; tile info reads the cursor's hex, game info reads the
+    --    empire,
     -- 3) unit control (Tab plus Alt-cluster quick actions),
     -- 4) turn lifecycle,
     -- 5) surveyor radius queries,
@@ -460,6 +463,8 @@ function BaselineHandler.create()
     -- nothing. Binding stays wired so the help entry can come back with a
     -- scenario that has tasks.
     -- appendAll(helpEntries, taskList.helpEntries)
+    -- Empty outside a supported scenario, the same gate as its chord.
+    appendAll(helpEntries, briefing.helpEntries)
     appendAll(helpEntries, unitControl.helpEntries)
     appendAll(helpEntries, turn.helpEntries)
     appendAll(helpEntries, surveyor.helpEntries)

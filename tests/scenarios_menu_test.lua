@@ -48,6 +48,7 @@ local function load()
         menu = realInstall(ctx, spec)
         return menu
     end
+    dofile("src/dlc/UI/Shared/CivVAccess_ScenarioRegistry.lua")
     dofile("src/dlc/UI/FrontEnd/CivVAccess_ScenariosMenuAccess.lua")
     BaseMenu.install = realInstall
     return menu

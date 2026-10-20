@@ -70,6 +70,12 @@ local function setup()
     dofile("src/dlc/UI/Shared/CivVAccess_BaseMenuTabs.lua")
     dofile("src/dlc/UI/Shared/CivVAccess_BaseMenuCore.lua")
     dofile("src/dlc/UI/InGame/CivVAccess_Turn.lua")
+    -- An ordinary game: no scenario mod activated, so no briefing row.
+    Modding.GetActivatedMods = function()
+        return {}
+    end
+    dofile("src/dlc/UI/Shared/CivVAccess_ScenarioRegistry.lua")
+    dofile("src/dlc/UI/InGame/CivVAccess_ScenarioBriefing.lua")
     dofile("src/dlc/UI/InGame/CivVAccess_GameScreens.lua")
     dofile("src/dlc/UI/InGame/CivVAccess_LaunchBar.lua")
     HandlerStack._reset()

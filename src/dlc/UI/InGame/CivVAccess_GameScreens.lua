@@ -21,8 +21,9 @@
 --                   first, with the end-turn button's text after its name.
 --
 -- Screens that exist only under some rulesets (the Vox Populi overviews,
--- squads) are added by GameScreens.list() when present, the same gates
--- BaselineHandler uses to register their chords.
+-- squads) or in some games (a supported scenario's briefing) are added by
+-- GameScreens.list() when present, the same gates BaselineHandler uses to
+-- register their chords.
 
 GameScreens = {}
 
@@ -275,11 +276,28 @@ local function communityPatchEntries(entries)
     end
 end
 
--- Every screen this ruleset has, in no particular order. Built per call so
--- game options and the active ruleset are read live.
+-- The running scenario's briefing, named with the scenario's own Briefing
+-- button label. Only in a game whose scenario ScenarioRegistry knows.
+local function scenarioEntries(entries)
+    if not ScenarioBriefing.available() then
+        return
+    end
+    entries[#entries + 1] = {
+        id = "briefing",
+        nameKey = ScenarioBriefing.nameKey(),
+        keyLabel = "TXT_KEY_CIVVACCESS_BRIEFING_HELP_KEY",
+        open = function()
+            ScenarioBriefing.open()
+        end,
+    }
+end
+
+-- Every screen this game has, in no particular order. Built per call so
+-- game options, the active ruleset and the running scenario are read live.
 function GameScreens.list()
     local entries = baseEntries()
     communityPatchEntries(entries)
+    scenarioEntries(entries)
     return entries
 end
 
