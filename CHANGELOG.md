@@ -12,13 +12,11 @@ start with `## [X.Y.Z] - YYYY-MM-DD` on its own line for the parser to find it.
 ## [Unreleased]
 
 New Features and improvements:
-- The American Civil War scenario is playable from the Scenarios menu, including choosing your side and difficulty.
-- Scenario event messages, like the Civil War's random events, open like other popups and stay in the message buffer.
-- In scenarios with a turn limit, T also says how many turns remain.
-- In the American Civil War scenario, Shift+B opens the briefing as a list you can arrow through.
+- The American Civil War scenario is playable from the Scenarios menu, thanks to Ahmad_SA.
+- In scenarios, Shift+B opens the briefing as a list you can arrow through.
 
 Bug fixes:
-- In ranged attack mode, a submarine aimed at land now says it can only strike sea targets, on the cursor, Space, and Enter.
+- In ranged attack mode, a submarine aimed at land now says it can only strike sea targets.
 - The Space preview in ranged attack mode no longer gives odds against a city you can't actually strike.
 
 ## [2.3.9] - 2026-10-19
