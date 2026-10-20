@@ -45,6 +45,7 @@ local cultureData
 local tourismRate
 local otherPlayers
 local influenceLevels
+local scenario
 
 local function setup()
     T.installLocaleStrings(GAME_TEXT)
@@ -86,6 +87,18 @@ local function setup()
     end
     Game.GetGameTurnYear = function()
         return 1620
+    end
+    -- An ordinary game by default: no World Builder scenario, no turn limit.
+    -- Scenario turn-line tests set a loaded scenario with its preset limit.
+    scenario = { loaded = false, maxTurns = 0, estimateEndTurn = 0 }
+    PreGame.GetLoadWBScenario = function()
+        return scenario.loaded
+    end
+    Game.GetMaxTurns = function()
+        return scenario.maxTurns
+    end
+    Game.GetEstimateEndTurn = function()
+        return scenario.estimateEndTurn
     end
     Game.IsOption = function(opt)
         return options[opt] == true
@@ -400,6 +413,35 @@ function M.test_turn_timer_whole_minute_singular()
     civvaccess_shared.turnTimerSeconds = 60
     T.eq(EmpireStatus._turnLine(), "Turn: 47, 1620 AD, 1 minute left")
     civvaccess_shared.turnTimerSeconds = nil
+end
+
+-- Scenario turn limit. The American Civil War map presets 50 turns; the line
+-- speaks what the scenario's own on-screen counter shows.
+
+function M.test_turn_appends_scenario_turns_remaining()
+    setup()
+    scenario = { loaded = true, maxTurns = 50, estimateEndTurn = 50 }
+    T.eq(EmpireStatus._turnLine(), "Turn: 47, 1620 AD, 3 turns remaining")
+end
+
+function M.test_turn_scenario_turns_remaining_singular()
+    setup()
+    scenario = { loaded = true, maxTurns = 50, estimateEndTurn = 48 }
+    T.eq(EmpireStatus._turnLine(), "Turn: 47, 1620 AD, 1 turn remaining")
+end
+
+-- Ordinary games carry a turn limit too, derived from the game speed when time
+-- victory is on; only a scenario's limit is spoken.
+function M.test_turn_ordinary_game_limit_not_spoken()
+    setup()
+    scenario = { loaded = false, maxTurns = 500, estimateEndTurn = 500 }
+    T.eq(EmpireStatus._turnLine(), "Turn: 47, 1620 AD")
+end
+
+function M.test_turn_scenario_without_turn_limit_not_spoken()
+    setup()
+    scenario = { loaded = true, maxTurns = 0, estimateEndTurn = 1000 }
+    T.eq(EmpireStatus._turnLine(), "Turn: 47, 1620 AD")
 end
 
 function M.test_turn_timer_whole_minutes_plural()

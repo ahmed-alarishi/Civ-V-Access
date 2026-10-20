@@ -220,6 +220,21 @@ local function timerClause()
     return Text.format("TXT_KEY_CIVVACCESS_TURN_TIMER_LEFT", timerUnit(secs, "TXT_KEY_CIVVACCESS_TURN_TIMER_SECONDS"))
 end
 
+-- Turns left before a World Builder scenario's turn limit, the count the
+-- scenario's own on-screen counter shows (the American Civil War map presets
+-- 50). Ordinary games carry a limit too, derived from the game speed when time
+-- victory is on, so the clause is gated to a loaded scenario with a real limit.
+local function scenarioTurnsClause()
+    if not PreGame.GetLoadWBScenario() or Game.GetMaxTurns() <= 0 then
+        return nil
+    end
+    local remaining = Game.GetEstimateEndTurn() - Game.GetGameTurn()
+    if remaining < 0 then
+        return nil
+    end
+    return Text.formatPlural("TXT_KEY_CIVVACCESS_SCENARIO_TURNS_REMAINING", remaining, remaining)
+end
+
 -- Turn and date. Reuses the Turn-module path (TXT_KEY_TP_TURN_COUNTER plus
 -- TXT_KEY_TIME_BC / TXT_KEY_TIME_AD) so the spoken format matches what
 -- Turn.lua emits at ActivePlayerTurnStart - one consistent calendar shape
@@ -245,13 +260,22 @@ local function turnLine()
             turn,
             date,
             maya,
+            scenarioTurnsClause(),
             supplyClause(player),
             shortageClause(player),
             stillPlayingClause(),
             timerClause()
         )
     end
-    return joinClauses(turn, date, supplyClause(player), shortageClause(player), stillPlayingClause(), timerClause())
+    return joinClauses(
+        turn,
+        date,
+        scenarioTurnsClause(),
+        supplyClause(player),
+        shortageClause(player),
+        stillPlayingClause(),
+        timerClause()
+    )
 end
 
 -- Player's current era as its localized display name (engine TXT_KEY_ERA_*
