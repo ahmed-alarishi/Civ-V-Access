@@ -1,0 +1,109 @@
+-- Reads text popups that the TextPopup hook cannot reach.
+--
+-- A mod that imports its own TextPopup.lua into the VFS shadows our override
+-- of that screen, so its popups open with no accessibility hook. The Firaxis
+-- scenarios that restyle the popup do exactly this (American Civil War and
+-- Scramble for Africa): every scenario event message, and the briefing,
+-- arrives that way. The box takes Enter and Esc itself to close, so without a
+-- hook the player hears nothing, and their next Enter on the map goes to a box
+-- they don't know is open.
+--
+-- So each such popup gets the dismiss menu the reward popups have (goody hut,
+-- great person): the message as the preamble, then a lone Close button, with
+-- Alt+Up/Down reviewing the message line by line. Enter and Esc still reach
+-- the box first and close it; Close (Space) closes it through UIManager the way
+-- the box's own button does. However the box closes, its hide reports the
+-- popup processed, and that closes the menu.
+--
+-- The message rides in on the same SerialEventGameMessagePopup the box itself
+-- listens to, and the box shows popupInfo.Text through LocalizeAndSetText, so
+-- the menu reads exactly what is on screen: Text.key resolves a TXT_KEY the
+-- same way and passes already-localized text through. Nothing opens whenever
+-- TextPopupAccess loaded this game: that wrapper publishes a liveness probe,
+-- which reads false once its Context's env is wiped (game exit, load from
+-- game) and is never refreshed when a shadowing mod keeps the wrapper from
+-- loading at all. Each message is also buffered under notification, matching
+-- NotificationAnnounce, so it stays reviewable after its box closes.
+
+ShadowedTextPopupAnnounce = {}
+
+local MENU_NAME = "ShadowedTextPopup"
+
+-- The box's Context: InGame.xml declares TextPopup at the top level, and a
+-- shadowing mod replaces only the file it loads.
+local TEXT_POPUP_PATH = "/InGame/TextPopup"
+
+local function hookAlive()
+    local probe = civvaccess_shared.textPopupHookProbe
+    if probe == nil then
+        return false
+    end
+    local ok, alive = pcall(probe)
+    if not ok then
+        Log.error("ShadowedTextPopupAnnounce: TextPopup hook probe failed: " .. tostring(alive))
+        return false
+    end
+    return alive == true
+end
+
+local function closeBox()
+    local box = ContextPtr:LookUpControl(TEXT_POPUP_PATH)
+    if box == nil then
+        Log.error("ShadowedTextPopupAnnounce: no " .. TEXT_POPUP_PATH .. " Context to close")
+        return
+    end
+    UIManager:DequeuePopup(box)
+end
+
+function ShadowedTextPopupAnnounce._onPopup(popupInfo)
+    if popupInfo.Type ~= ButtonPopupTypes.BUTTONPOPUP_TEXT or hookAlive() then
+        return
+    end
+    local text = Text.key(popupInfo.Text)
+    MessageBuffer.append(text, "notification")
+    HandlerStack.removeByName(MENU_NAME, false)
+    local handler = BaseMenu.create({
+        name = MENU_NAME,
+        displayName = Text.key("TXT_KEY_CIVVACCESS_SCREEN_TEXT_POPUP"),
+        preamble = text,
+        items = {
+            -- A Choice, not a Button: the box's own button lives in another
+            -- Context, so there is no control here to back a Button item.
+            BaseMenuItems.Choice({
+                labelText = Text.key("TXT_KEY_CLOSE"),
+                verboseKindKey = "TXT_KEY_CIVVACCESS_KIND_BUTTON",
+                activate = closeBox,
+            }),
+        },
+        capturesAllInput = true,
+    })
+    RewardReview.install(handler, function()
+        return { text }
+    end)
+    HandlerStack.push(handler)
+end
+
+function ShadowedTextPopupAnnounce._onPopupProcessed(popupType)
+    if popupType ~= ButtonPopupTypes.BUTTONPOPUP_TEXT then
+        return
+    end
+    HandlerStack.removeByName(MENU_NAME, true)
+end
+
+function ShadowedTextPopupAnnounce.install()
+    Log.installEvent(
+        Events,
+        "SerialEventGameMessagePopup",
+        Log.safeListener("ShadowedTextPopupAnnounce", ShadowedTextPopupAnnounce._onPopup),
+        "ShadowedTextPopupAnnounce",
+        "shadowed text popups will be silent"
+    )
+    Log.installEvent(
+        Events,
+        "SerialEventGameMessagePopupProcessed",
+        Log.safeListener("ShadowedTextPopupAnnounce.processed", ShadowedTextPopupAnnounce._onPopupProcessed),
+        "ShadowedTextPopupAnnounce",
+        "a shadowed text popup's menu will stay open after its box closes"
+    )
+    Log.info("ShadowedTextPopupAnnounce: installed")
+end

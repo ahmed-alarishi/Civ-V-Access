@@ -188,7 +188,7 @@ globals = {
     "GiftMode",
     "ChooseProductionLogic", "ChooseTechLogic", "ProductionHelpText", "BuildingInvest",
     "BeliefAdvisor",
-    "NotificationAnnounce", "LekModAlertAnnounce",
+    "NotificationAnnounce", "LekModAlertAnnounce", "ShadowedTextPopupAnnounce",
     "LekModChat", "LekModDraft",
     "Recommendations",
     "SocialPolicyLogic",
@@ -332,6 +332,9 @@ files["tests/"] = {
         -- PopupBoot-provided close hook; proposal_chart_popup_test stubs it so
         -- the captured Yes / No vote items can be activated without a Context.
         "OnClose",
+        -- TextPopup's close handler; the shadowed-text-popup suite stubs it
+        -- to load TextPopupAccess without a Context.
+        "OnCloseButtonClicked",
         -- Engine enums only the ChooseProduction suite needs; shimmed in
         -- that suite's setup rather than in the polyfill.
         "OrderTypes", "AdvisorTypes",

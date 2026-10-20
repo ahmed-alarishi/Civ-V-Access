@@ -13,6 +13,7 @@ start with `## [X.Y.Z] - YYYY-MM-DD` on its own line for the parser to find it.
 
 New Features and improvements:
 - The American Civil War scenario is playable from the Scenarios menu, including choosing your side and difficulty.
+- Scenario event messages, like the Civil War's random events, open like other popups and stay in the message buffer.
 
 Bug fixes:
 - In ranged attack mode, a submarine aimed at land now says it can only strike sea targets, on the cursor, Space, and Enter.
