@@ -678,6 +678,8 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_FOG"] = "niebla"
 -- TXT_KEY_CIVVACCESS_UNIT_PREVIEW_OUT_OF_RANGE so target-mode preview text
 -- and cursor-prefix text stay in sync across locales.
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_TARGET_UNSEEN"] = "no visible"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_TARGET_SEA_ONLY"] = "solo objetivos marítimos"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_TARGET_OTHER_WATERS"] = "otras aguas"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_AT_CAPITAL"] = "capital"
 
 -- Spoken when the user presses Ctrl+S to jump to their capital before

@@ -259,17 +259,18 @@ local function moveFromWaypointPreview(actor, targetPlot)
     return formatMovePath(actor, nodes, actor:MaxMoves())
 end
 
-local function rangedPreview(actor, defender, targetPlot, targetX, targetY)
-    -- bNeedWar=false so a strike on a peaceful rival's tile passes the
-    -- gate and gets the full damage preview; the engine will queue
-    -- BUTTONPOPUP_DECLAREWARRANGESTRIKE on commit and GenericPopupAccess
-    -- speaks the confirmation. With bNeedWar=true the preview wrongly
-    -- collapsed to "out of range" for any peaceful target the commit
-    -- path would actually allow.
-    if not actor:CanRangeStrikeAt(targetX, targetY, false, true) then
-        return Text.key("TXT_KEY_CIVVACCESS_UNIT_PREVIEW_OUT_OF_RANGE")
+-- Why the engine refused a ranged strike on a plot that holds a target.
+-- Unit-level limits first (they hold for every plot), then TargetPlots'
+-- domain / range / LoS walk -- the same one the cursor prefix speaks -- and
+-- a generic failure when none of those explains it.
+local function strikeBlockedReason(actor, plot)
+    if not actor:CanRangeStrike() then
+        return Text.key("TXT_KEY_CIVVACCESS_UNIT_PRECHECK_CANT_ATTACK")
     end
-    return UnitSpeech.rangedPreview(actor, defender, targetPlot)
+    if actor:MovesLeft() <= 0 then
+        return Text.key("TXT_KEY_CIVVACCESS_UNIT_PRECHECK_OUT_OF_ATTACKS")
+    end
+    return TargetPlots.unitStrikeBlockReason(actor, plot) or Text.key("TXT_KEY_CIVVACCESS_UNIT_ACTION_FAILED")
 end
 
 -- Plot defender for combat preview / commit. Wraps the engine's
@@ -481,26 +482,40 @@ end
 -- ranged strike on a defended city must preview the city's HP, not the
 -- garrison's. Returns nil if the plot has no enemy combat target (caller
 -- speaks EMPTY).
+--
+-- A ranged preview is gated on the engine's strike check for cities and
+-- units alike, so a target the strike can't reach (out of range, blocked
+-- LoS, a submarine aiming at land) speaks the reason instead of odds.
+-- bNeedWar=false so a strike on a peaceful rival's tile passes the gate and
+-- gets the full damage preview; the engine will queue
+-- BUTTONPOPUP_DECLAREWARRANGESTRIKE on commit and GenericPopupAccess speaks
+-- the confirmation.
 local function combatPreviewAt(actor, plot, tx, ty, ranged)
     -- Don't reveal what's on a fogged tile. Caller treats nil as "empty".
     if not targetVisible(actor, plot) then
         return nil
     end
     local defenderCity = UnitControl.enemyCityAt(plot)
+    local defenderUnit = nil
+    if defenderCity == nil then
+        defenderUnit = defenderAt(plot, ranged, actor)
+        if defenderUnit == nil then
+            return nil
+        end
+    end
+    if ranged and not actor:CanRangeStrikeAt(tx, ty, false, true) then
+        return strikeBlockedReason(actor, plot)
+    end
     if defenderCity ~= nil then
         if ranged then
             return UnitSpeech.cityRangedPreview(actor, defenderCity, plot)
         end
         return UnitSpeech.cityMeleePreview(actor, defenderCity, plot)
     end
-    local defenderUnit = defenderAt(plot, ranged, actor)
-    if defenderUnit ~= nil then
-        if ranged then
-            return rangedPreview(actor, defenderUnit, plot, tx, ty)
-        end
-        return UnitSpeech.meleePreview(actor, defenderUnit, plot)
+    if ranged then
+        return UnitSpeech.rangedPreview(actor, defenderUnit, plot)
     end
-    return nil
+    return UnitSpeech.meleePreview(actor, defenderUnit, plot)
 end
 
 -- Path-after-move suffix for the combat preview when a melee target is
@@ -827,24 +842,14 @@ local function commitFailureReason(actor, mode, plot, tx, ty)
         -- Allowed=true so an undefended city / civilian-occupied tile
         -- is a valid target.
         if not actor:CanRangeStrikeAt(tx, ty, false, true) then
-            -- Drill into why. Order matches user-helpful priority:
-            -- semantic (no target), geometric (too far), terrain
-            -- (blocked LoS). Cursor's targetabilityPrefix already speaks
-            -- range / LoS while the user navigates, but commit-time also
-            -- emits them so a user who pressed enter without hearing the
+            -- Drill into why: no target first, then the same reason walk
+            -- the Space preview and cursor prefix speak (sea-only domain,
+            -- range, LoS), so a user who pressed enter without hearing the
             -- prefix still gets a clear reason.
             if defenderAt(plot, true, actor) == nil and UnitControl.enemyCityAt(plot) == nil then
                 return { reason = Text.key("TXT_KEY_CIVVACCESS_UNIT_PREVIEW_EMPTY") }
             end
-            local dist = Map.PlotDistance(actor:GetX(), actor:GetY(), tx, ty)
-            if dist > actor:Range() then
-                return { reason = Text.key("TXT_KEY_CIVVACCESS_UNIT_PREVIEW_OUT_OF_RANGE") }
-            end
-            local ignoresLoS = actor:GetDomainType() == DomainTypes.DOMAIN_AIR or actor:IsRangeAttackIgnoreLOS()
-            if not ignoresLoS and not EngineData.hasLineOfSight(actor:GetPlot(), plot, actor:GetTeam(), actor) then
-                return { reason = Text.key("TXT_KEY_CIVVACCESS_TARGET_UNSEEN") }
-            end
-            return { reason = Text.key("TXT_KEY_CIVVACCESS_UNIT_ACTION_FAILED") }
+            return { reason = strikeBlockedReason(actor, plot) }
         end
         return nil
     end

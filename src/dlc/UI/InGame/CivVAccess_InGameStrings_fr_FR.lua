@@ -581,6 +581,8 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_FOG"] = "brouillard"
 -- TXT_KEY_CIVVACCESS_UNIT_PREVIEW_OUT_OF_RANGE so target-mode preview text
 -- and cursor-prefix text stay in sync across locales.
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_TARGET_UNSEEN"] = "non vu"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_TARGET_SEA_ONLY"] = "cibles navales uniquement"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_TARGET_OTHER_WATERS"] = "autres eaux"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_AT_CAPITAL"] = "capitale"
 -- Spoken when the user presses Ctrl+S to jump to their capital before
 -- founding a city. Mirrors the bookmark "no bookmark" pattern -- silence

@@ -321,4 +321,30 @@ function M.test_deal_resource_count_passes_player_and_resource_through()
     T.eq(seen.resType, 7)
 end
 
+-- Submarine domain check on the vanilla rule: land (coastal cities
+-- included) and other-area water are refused; non-submarines never are.
+local function sub(onlyInDomain)
+    return T.fakeUnit({
+        domain = DomainTypes.DOMAIN_SEA,
+        onlyInDomain = onlyInDomain,
+        plot = T.fakePlot({ water = true, areaID = 1 }),
+    })
+end
+
+function M.test_strike_outside_domain_same_area_water_allowed()
+    T.eq(EngineData.strikeOutsideDomain(sub(true), T.fakePlot({ water = true, areaID = 1 })), false)
+end
+
+function M.test_strike_outside_domain_coastal_city_refused()
+    T.eq(EngineData.strikeOutsideDomain(sub(true), T.fakePlot({ isCity = true, areaID = 2 })), true)
+end
+
+function M.test_strike_outside_domain_lake_refused()
+    T.eq(EngineData.strikeOutsideDomain(sub(true), T.fakePlot({ water = true, areaID = 5 })), true)
+end
+
+function M.test_strike_outside_domain_ignores_unrestricted_units()
+    T.eq(EngineData.strikeOutsideDomain(sub(false), T.fakePlot({ areaID = 2 })), false)
+end
+
 return M

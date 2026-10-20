@@ -1676,6 +1676,62 @@ function M.test_vp_has_line_of_sight_passes_attacker_see_through()
     T.eq(seen, 2, "the attacker's see-through reaches canSeePlot")
 end
 
+-- Submarine domain check. CP compares landmass IDs (oceans included), and
+-- under BALANCE_VP lets a sub hit a city touching its ocean.
+local function subOn(landmass)
+    return {
+        IsRangeAttackOnlyInDomain = function()
+            return true
+        end,
+        GetPlot = function()
+            return T.fakePlot({ water = true, landmass = landmass })
+        end,
+    }
+end
+
+local function vpWithBalance(balanceOn, neighborLandmass)
+    local vp, env = loadSeam(VP_PATH)
+    env.Game = {
+        IsCustomModOption = function(opt)
+            return opt == "BALANCE_VP" and balanceOn
+        end,
+    }
+    env.Map = {
+        PlotDirection = function(_x, _y, dir)
+            if dir == 0 then
+                return T.fakePlot({ water = true, landmass = neighborLandmass })
+            end
+            return T.fakePlot({ landmass = 3 })
+        end,
+    }
+    return vp
+end
+
+function M.test_vp_strike_outside_domain_same_ocean_allowed()
+    local vp = vpWithBalance(true, 1)
+    T.eq(vp.strikeOutsideDomain(subOn(1), T.fakePlot({ water = true, landmass = 1 })), false)
+end
+
+function M.test_vp_strike_outside_domain_land_unit_refused()
+    local vp = vpWithBalance(true, 1)
+    T.eq(vp.strikeOutsideDomain(subOn(1), T.fakePlot({ landmass = 3 })), true)
+end
+
+function M.test_vp_strike_outside_domain_coastal_city_allowed_under_balance()
+    local vp = vpWithBalance(true, 1)
+    T.eq(vp.strikeOutsideDomain(subOn(1), T.fakePlot({ isCity = true, landmass = 3 })), false)
+end
+
+function M.test_vp_strike_outside_domain_city_on_other_ocean_refused()
+    local vp = vpWithBalance(true, 9)
+    T.eq(vp.strikeOutsideDomain(subOn(1), T.fakePlot({ isCity = true, landmass = 3 })), true)
+end
+
+function M.test_vp_strike_outside_domain_coastal_city_refused_without_balance()
+    local vp = vpWithBalance(false, 1)
+    T.eq(vp.strikeOutsideDomain(subOn(1), T.fakePlot({ isCity = true, landmass = 3 })), true)
+end
+
 function M.test_vp_building_investments_enabled_reads_custom_mod_option()
     local vp, env = loadSeam(VP_PATH)
     env.Game = {

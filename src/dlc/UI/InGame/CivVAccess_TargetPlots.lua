@@ -114,6 +114,32 @@ local function strikeTarget(plot, attacker)
     return nil
 end
 
+-- Why the engine rejected a unit ranged strike on a visible `plot`, named
+-- by the reasons the player can't otherwise perceive: the attacker's
+-- in-domain-only restriction (a submarine aiming at land or into a lake),
+-- then distance, then blocked line of sight. Domain goes first because
+-- moving closer can't fix it. nil when none of these explains the refusal
+-- (no target there, unit-level limits); callers decide what to say then.
+-- Shared by the cursor's targetability prefix and UnitTargetMode's Space
+-- preview and commit reasons so the three never disagree.
+function TargetPlots.unitStrikeBlockReason(attacker, plot)
+    if EngineData.strikeOutsideDomain(attacker, plot) then
+        if plot:IsWater() then
+            return Text.key("TXT_KEY_CIVVACCESS_TARGET_OTHER_WATERS")
+        end
+        return Text.key("TXT_KEY_CIVVACCESS_TARGET_SEA_ONLY")
+    end
+    local attackerPlot = attacker:GetPlot()
+    if Map.PlotDistance(attackerPlot:GetX(), attackerPlot:GetY(), plot:GetX(), plot:GetY()) > attacker:Range() then
+        return Text.key("TXT_KEY_CIVVACCESS_UNIT_PREVIEW_OUT_OF_RANGE")
+    end
+    local ignoresLoS = attacker:GetDomainType() == DomainTypes.DOMAIN_AIR or attacker:IsRangeAttackIgnoreLOS()
+    if not ignoresLoS and not EngineData.hasLineOfSight(attackerPlot, plot, attacker:GetTeam(), attacker) then
+        return Text.key("TXT_KEY_CIVVACCESS_TARGET_UNSEEN")
+    end
+    return nil
+end
+
 -- Per-kind engine gate, against an already-resolved actor.
 local function validFor(scope, actor, plot)
     local kind = scope.kind

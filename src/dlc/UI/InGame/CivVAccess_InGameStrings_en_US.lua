@@ -794,6 +794,13 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_FOG"] = "fog"
 -- TXT_KEY_CIVVACCESS_UNIT_PREVIEW_OUT_OF_RANGE so target-mode preview text
 -- and cursor-prefix text stay in sync across locales.
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_TARGET_UNSEEN"] = "unseen"
+-- Ranged-target reasons for units whose strike only works within their own
+-- domain (the submarine torpedo). SEA_ONLY: the target is on land, a coastal
+-- city included. OTHER_WATERS: the target is water the attacker isn't on,
+-- such as a lake. Spoken as a cursor prefix in ranged mode, as the Space
+-- preview, and as the commit failure.
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_TARGET_SEA_ONLY"] = "sea targets only"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_TARGET_OTHER_WATERS"] = "different waters"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_AT_CAPITAL"] = "capital"
 -- Spoken when the user presses Ctrl+S to jump to their capital before
 -- founding a city. Mirrors the bookmark "no bookmark" pattern -- silence

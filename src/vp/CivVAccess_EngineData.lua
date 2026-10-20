@@ -1009,6 +1009,33 @@ function EngineData.hasLineOfSight(plot, targetPlot, team, attacker)
     return plot:CanSeePlot(targetPlot, team, 10000, -1, seeThrough)
 end
 
+-- Whether the attacker's in-domain-only ranged attack (the submarine
+-- torpedo, Units.RangeAttackOnlyInDomain) by itself rules out targetPlot.
+-- CP's CvUnit::canEverRangeStrikeAt compares landmass IDs (which double as
+-- ocean IDs) rather than areas, so a plot on any other landmass or ocean is
+-- out. Under BALANCE_VP a city is allowed when its own plot or an adjacent
+-- one shares the attacker's ocean (CvCity::HasAccessToLandmassOrOcean) --
+-- VP subs can torpedo coastal cities. Range and line of sight are the
+-- caller's.
+function EngineData.strikeOutsideDomain(attacker, targetPlot)
+    if not attacker:IsRangeAttackOnlyInDomain() then
+        return false
+    end
+    local landmass = attacker:GetPlot():GetLandmass()
+    if targetPlot:GetLandmass() == landmass then
+        return false
+    end
+    if balanceVP() and targetPlot:IsCity() then
+        for dir = 0, DirectionTypes.NUM_DIRECTION_TYPES - 1 do
+            local adj = Map.PlotDirection(targetPlot:GetX(), targetPlot:GetY(), dir)
+            if adj ~= nil and adj:GetLandmass() == landmass then
+                return false
+            end
+        end
+    end
+    return true
+end
+
 -- Extension binding: whether the unit could enter the target plot as a
 -- destination -- by plain move or by attacking what's there -- declaring
 -- war if that's what entry takes. VP's stock binding exists but its

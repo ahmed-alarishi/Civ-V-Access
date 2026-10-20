@@ -228,6 +228,14 @@ function T.fakePlot(opts)
     function p:Area()
         return opts.area
     end
+    -- Area / landmass IDs, read by the submarine domain check
+    -- (EngineData.strikeOutsideDomain). Default 0 puts every plot in one.
+    function p:GetArea()
+        return opts.areaID or 0
+    end
+    function p:GetLandmass()
+        return opts.landmass or 0
+    end
     function p:GetPlotType()
         return self._plotType
     end
@@ -402,6 +410,10 @@ function T.fakeUnit(opts)
     end
     function u:IsRangeAttackIgnoreLOS()
         return opts.ignoresLoS or false
+    end
+    -- Submarine torpedo restriction (Units.RangeAttackOnlyInDomain).
+    function u:IsRangeAttackOnlyInDomain()
+        return opts.onlyInDomain or false
     end
     -- The engine's authoritative strike gate. Defaults false: most test
     -- tiles hold no enemy, so the engine would report the tile not strikable

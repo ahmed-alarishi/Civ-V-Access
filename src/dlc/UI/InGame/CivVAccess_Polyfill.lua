@@ -386,6 +386,7 @@ DirectionTypes = DirectionTypes
         DIRECTION_SOUTHWEST = 3,
         DIRECTION_WEST = 4,
         DIRECTION_NORTHWEST = 5,
+        NUM_DIRECTION_TYPES = 6,
     }
 
 -- Engine values are PLOT_MOUNTAIN=0, PLOT_HILLS=1, PLOT_LAND=2, PLOT_OCEAN=3.

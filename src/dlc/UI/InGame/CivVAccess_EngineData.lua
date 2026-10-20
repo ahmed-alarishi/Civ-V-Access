@@ -792,6 +792,18 @@ function EngineData.hasLineOfSight(plot, targetPlot, team, _attacker)
     return plot:HasLineOfSight(targetPlot, team)
 end
 
+-- Whether the attacker's in-domain-only ranged attack (the submarine
+-- torpedo, Units.RangeAttackOnlyInDomain) by itself rules out targetPlot.
+-- CvUnit::canEverRangeStrikeAt rejects every plot that isn't water --
+-- coastal cities included -- and any water plot in a different area from
+-- the attacker's (a lake). Range and line of sight are the caller's.
+function EngineData.strikeOutsideDomain(attacker, targetPlot)
+    if not attacker:IsRangeAttackOnlyInDomain() then
+        return false
+    end
+    return not targetPlot:IsWater() or targetPlot:GetArea() ~= attacker:GetPlot():GetArea()
+end
+
 -- Extension binding: whether the unit could enter the target plot as a
 -- destination -- by plain move or by attacking what's there -- declaring
 -- war if that's what entry takes (CvUnit::canMoveOrAttackInto with the

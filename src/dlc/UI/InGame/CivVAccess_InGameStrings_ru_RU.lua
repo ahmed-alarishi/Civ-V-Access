@@ -537,6 +537,8 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_UNEXPLORED"] = "не исследован
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_FOG"] = "туман"
 -- Cursor prefix in ranged-attack interface mode when no line of sight.
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_TARGET_UNSEEN"] = "невидима"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_TARGET_SEA_ONLY"] = "только морские цели"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_TARGET_OTHER_WATERS"] = "другие воды"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_AT_CAPITAL"] = "столица"
 -- Spoken when the user presses Ctrl+S to jump to their capital before
 -- founding a city.

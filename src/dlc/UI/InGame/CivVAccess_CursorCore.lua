@@ -107,10 +107,11 @@ end
 -- isolation read "blocked" and the cursor cried "unseen" on a strike the
 -- engine happily committed. CanRangeStrikeAt needs a valid target on the
 -- plot, so it can't itself name the reason an empty or unreachable tile is
--- not strikable; when it declines we fall back to the geometry the player
--- can't otherwise perceive -- out of range first, then blocked line of sight
--- -- matching the engine's drill order in commitFailureReason. Air units /
--- IsRangeAttackIgnoreLOS skip the LoS step (engine does the same in
+-- not strikable; when it declines we fall back to what the player can't
+-- otherwise perceive -- for units a submarine's sea-only restriction, then
+-- out of range, then blocked line of sight (TargetPlots.unitStrikeBlock-
+-- Reason, shared with UnitTargetMode); for cities range then LoS. Air units
+-- / IsRangeAttackIgnoreLOS skip the LoS step (engine does the same in
 -- canEverRangeStrikeAt). The attacker's own plot returns no prefix.
 local function targetabilityPrefix(plot)
     local mode = UI.GetInterfaceMode()
@@ -127,8 +128,6 @@ local function targetabilityPrefix(plot)
         attacker = unit
         attackerPlot = unit:GetPlot()
         team = unit:GetTeam()
-        range = unit:Range()
-        ignoresLoS = unit:GetDomainType() == DomainTypes.DOMAIN_AIR or unit:IsRangeAttackIgnoreLOS()
     elseif mode == InterfaceModeTypes.INTERFACEMODE_CITY_RANGE_ATTACK then
         local city = UI.GetHeadSelectedCity()
         if city == nil then
@@ -169,12 +168,22 @@ local function targetabilityPrefix(plot)
     if strikable then
         return ""
     end
-    -- Not strikable: name the geometric reason. Other causes (no enemy on
-    -- the tile, city-on-city) stay silent -- the glance reads what's there.
+    -- Not strikable: name the reason the player can't perceive. Other
+    -- causes (no enemy on the tile, city-on-city) stay silent -- the glance
+    -- reads what's there. Units share TargetPlots' reason walk with the
+    -- Space preview, which adds the submarine's sea-only restriction ahead
+    -- of range and line of sight.
+    if attacker ~= nil then
+        local reason = TargetPlots.unitStrikeBlockReason(attacker, plot)
+        if reason == nil then
+            return ""
+        end
+        return reason .. ", "
+    end
     if Map.PlotDistance(ax, ay, tx, ty) > range then
         return Text.key("TXT_KEY_CIVVACCESS_UNIT_PREVIEW_OUT_OF_RANGE") .. ", "
     end
-    if not ignoresLoS and not EngineData.hasLineOfSight(attackerPlot, plot, team, attacker) then
+    if not ignoresLoS and not EngineData.hasLineOfSight(attackerPlot, plot, team) then
         return Text.key("TXT_KEY_CIVVACCESS_TARGET_UNSEEN") .. ", "
     end
     return ""

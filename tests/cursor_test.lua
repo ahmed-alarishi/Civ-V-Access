@@ -27,6 +27,9 @@ local function setup()
     -- glance tests; the mass_names suite owns the named cases.
     dofile("src/dlc/UI/InGame/CivVAccess_MassNames.lua")
     dofile("src/dlc/UI/InGame/CivVAccess_CursorCore.lua")
+    -- The ranged-mode targetability prefix names a unit's reason through
+    -- TargetPlots.unitStrikeBlockReason.
+    dofile("src/dlc/UI/InGame/CivVAccess_TargetPlots.lua")
     -- Cursor.activate delegates through CursorActivate.run; without the
     -- module loaded the activate-branch tests would hit a nil global.
     dofile("src/dlc/UI/InGame/CivVAccess_CursorActivate.lua")
@@ -2385,6 +2388,8 @@ end
 -- attacker plot return false (uniform geometric obstruction). foggedAt is
 -- a list of x coordinates whose east-strip plots should be revealed-but-
 -- fogged so the targetability prefix's IsVisible gate can be exercised.
+-- attackerWater / waterAt / areaAt shape a sea scene for the submarine
+-- domain check: waterAt and areaAt are keyed by strip x.
 local function setupRangedScene(opts)
     setup()
     Players[0] = T.fakePlayer({ team = 0 })
@@ -2393,6 +2398,7 @@ local function setupRangedScene(opts)
         x = 0,
         y = 0,
         terrain = 1,
+        water = opts.attackerWater,
         canSeePlot = function(_t, _team, _range, _dir)
             if opts.losBlocked then
                 return false
@@ -2413,6 +2419,8 @@ local function setupRangedScene(opts)
             terrain = (opts.featureless and -1) or 1,
             visible = not fogged[x],
             revealed = true,
+            water = opts.waterAt and opts.waterAt[x],
+            areaID = opts.areaAt and opts.areaAt[x],
         })
     end
     Map.GetPlot = function(x, y)
@@ -2439,6 +2447,7 @@ local function selectArcher(attackerPlot, opts)
         range = opts.range or 2,
         domain = opts.domain or DomainTypes.DOMAIN_LAND,
         canRangeStrike = opts.canRangeStrike,
+        onlyInDomain = opts.onlyInDomain,
     })
     archer._plot = attackerPlot
     UI.GetHeadSelectedUnit = function()
@@ -2514,6 +2523,50 @@ function M.test_targetability_no_unseen_when_engine_allows_strike_despite_blocke
     local out = Cursor.move(DirectionTypes.DIRECTION_EAST)
     T.truthy(not out:find("unseen", 1, true), "engine-strikable tile must not be tagged unseen: " .. out)
     T.truthy(not out:find("out of range", 1, true), "engine-strikable tile must not be tagged out of range: " .. out)
+end
+
+-- A submarine's torpedo only reaches water in its own area. Land in range
+-- and in LoS is still refused by the engine, and the prefix must say why
+-- rather than stay silent (silence reads as strikable).
+function M.test_targetability_submarine_land_target_speaks_sea_only()
+    local attackerPlot = setupRangedScene({
+        mode = InterfaceModeTypes.INTERFACEMODE_RANGE_ATTACK,
+        attackerWater = true,
+        waterAt = { [1] = true },
+    })
+    selectArcher(attackerPlot, { domain = DomainTypes.DOMAIN_SEA, onlyInDomain = true })
+    local water = Cursor.move(DirectionTypes.DIRECTION_EAST) -- (1,0): same-area water
+    T.truthy(not water:find("sea targets only", 1, true), "own-area water must not tag sea only: " .. water)
+    local out = Cursor.move(DirectionTypes.DIRECTION_EAST) -- (2,0): land, in range
+    T.truthy(out:find("sea targets only", 1, true), "land target must speak sea targets only: " .. out)
+    T.truthy(not out:find("out of range", 1, true), "in-range land must not tag out of range: " .. out)
+end
+
+function M.test_targetability_submarine_land_out_of_range_still_speaks_sea_only()
+    -- Domain first: moving closer can't make land strikable.
+    local attackerPlot = setupRangedScene({
+        mode = InterfaceModeTypes.INTERFACEMODE_RANGE_ATTACK,
+        attackerWater = true,
+    })
+    selectArcher(attackerPlot, { domain = DomainTypes.DOMAIN_SEA, onlyInDomain = true, range = 2 })
+    Cursor.move(DirectionTypes.DIRECTION_EAST)
+    Cursor.move(DirectionTypes.DIRECTION_EAST)
+    local out = Cursor.move(DirectionTypes.DIRECTION_EAST) -- (3,0): land, distance 3
+    T.truthy(out:find("sea targets only", 1, true), "far land must speak sea targets only: " .. out)
+    T.truthy(not out:find("out of range", 1, true), "domain reason replaces range: " .. out)
+end
+
+function M.test_targetability_submarine_other_area_water_speaks_different_waters()
+    local attackerPlot = setupRangedScene({
+        mode = InterfaceModeTypes.INTERFACEMODE_RANGE_ATTACK,
+        attackerWater = true,
+        waterAt = { [1] = true, [2] = true },
+        areaAt = { [2] = 7 },
+    })
+    selectArcher(attackerPlot, { domain = DomainTypes.DOMAIN_SEA, onlyInDomain = true })
+    Cursor.move(DirectionTypes.DIRECTION_EAST)
+    local out = Cursor.move(DirectionTypes.DIRECTION_EAST) -- (2,0): a lake, area 7
+    T.truthy(out:find("different waters", 1, true), "other-area water must speak different waters: " .. out)
 end
 
 function M.test_targetability_no_prefix_when_not_in_ranged_mode()

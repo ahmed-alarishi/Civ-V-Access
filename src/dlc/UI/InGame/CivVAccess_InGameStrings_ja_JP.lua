@@ -400,6 +400,8 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_UNCLAIMED"] = "未領土"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_UNEXPLORED"] = "未探索"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_FOG"] = "霧"
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_TARGET_UNSEEN"] = "見えない"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_TARGET_SEA_ONLY"] = "海上目標のみ"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_TARGET_OTHER_WATERS"] = "別の水域"
 
 -- Capital orientation
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_AT_CAPITAL"] = "首都"

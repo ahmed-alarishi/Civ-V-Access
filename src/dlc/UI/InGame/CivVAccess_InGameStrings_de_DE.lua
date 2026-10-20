@@ -473,6 +473,8 @@ CivVAccess_Strings["TXT_KEY_CIVVACCESS_FOG"] = "Nebel"
 
 -- ===== Target mode prefix =====
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_TARGET_UNSEEN"] = "verdeckt"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_TARGET_SEA_ONLY"] = "nur Seeziele"
+CivVAccess_Strings["TXT_KEY_CIVVACCESS_TARGET_OTHER_WATERS"] = "andere Gewässer"
 
 -- ===== Capital jump tokens =====
 CivVAccess_Strings["TXT_KEY_CIVVACCESS_AT_CAPITAL"] = "Hauptstadt"
