@@ -9,7 +9,8 @@
 -- BaseMenu, HandlerStack, MessageBuffer, RewardReview,
 -- ShadowedTextPopupAnnounce, and TextPopupAccess for the probe it publishes.
 -- Seams: the popup events (their listeners are captured so tests fire
--- synthetic popups), the box's Context lookup, UIManager, and the game text.
+-- synthetic popups), the box's Context lookup (a stub whose hidden flag stands
+-- in for the popup queue), UIManager, and the game text.
 
 local T = require("support")
 local Setup = require("menu_test_setup")
@@ -25,7 +26,7 @@ local OTHER_POPUP = 46
 
 local EVENT_TEXT = "PRO-UNION EVENT: Emancipation Proclamation[NEWLINE][NEWLINE]Freedom proclaimed."
 
-local popupListeners, processedListeners, dequeued
+local popupListeners, shownListeners, processedListeners, dequeued, box
 
 local function setup()
     Setup.fresh()
@@ -36,10 +37,15 @@ local function setup()
     include = function() end
     ButtonPopupTypes = ButtonPopupTypes or {}
     ButtonPopupTypes.BUTTONPOPUP_TEXT = TEXT_POPUP
-    popupListeners, processedListeners, dequeued = {}, {}, {}
+    popupListeners, shownListeners, processedListeners, dequeued = {}, {}, {}, {}
     Events.SerialEventGameMessagePopup = {
         Add = function(fn)
             popupListeners[#popupListeners + 1] = fn
+        end,
+    }
+    Events.SerialEventGameMessagePopupShown = {
+        Add = function(fn)
+            shownListeners[#shownListeners + 1] = fn
         end,
     }
     Events.SerialEventGameMessagePopupProcessed = {
@@ -51,6 +57,19 @@ local function setup()
     UIManager.DequeuePopup = function(_, ctx)
         dequeued[#dequeued + 1] = ctx
     end
+    -- The box shows as soon as it queues unless a test holds it back.
+    box = { hidden = false }
+    function box:IsHidden()
+        return self.hidden
+    end
+    ContextPtr = {
+        LookUpControl = function(_, path)
+            if path == "/InGame/TextPopup" then
+                return box
+            end
+            return nil
+        end,
+    }
     civvaccess_shared.textPopupHookProbe = nil
     dofile("src/dlc/UI/InGame/CivVAccess_MessageBuffer.lua")
     MessageBuffer._reset()
@@ -62,6 +81,13 @@ end
 local function firePopup(popupInfo)
     for _, fn in ipairs(popupListeners) do
         fn(popupInfo)
+    end
+end
+
+-- The box passes nil: its m_PopupInfo is never assigned.
+local function fireShown()
+    for _, fn in ipairs(shownListeners) do
+        fn(nil)
     end
 end
 
@@ -131,24 +157,62 @@ end
 
 function M.test_close_closes_the_box_the_way_its_button_does()
     setup()
-    local box = { name = "scenario text popup Context" }
-    local lookedUp
-    ContextPtr = {
-        LookUpControl = function(_, path)
-            lookedUp = path
-            return box
-        end,
-    }
-    local ok, err = pcall(function()
-        firePopup({ Type = TEXT_POPUP, Text = EVENT_TEXT })
-        local menu = HandlerStack.active()
-        menu._items[1]:activate(menu)
-    end)
-    ContextPtr = nil
-    T.truthy(ok, tostring(err))
-    T.eq(lookedUp, "/InGame/TextPopup")
+    firePopup({ Type = TEXT_POPUP, Text = EVENT_TEXT })
+    local menu = HandlerStack.active()
+    menu._items[1]:activate(menu)
     T.eq(#dequeued, 1)
     T.eq(dequeued[1], box)
+end
+
+-- The box queues behind a popup already up, such as a chooser at turn start.
+-- The menu must not open over that popup and take its keys.
+function M.test_waits_for_a_queued_box_to_show()
+    setup()
+    pushMap()
+    box.hidden = true
+    local before = #speaks
+    firePopup({ Type = TEXT_POPUP, Text = EVENT_TEXT })
+    T.eq(HandlerStack.active().name, "Map", "no menu while the box waits in the queue")
+    T.eq(#speaks, before)
+    T.eq(#buffered(), 0)
+    fireShown()
+    T.eq(HandlerStack.active().name, "Map", "another popup showing is not the box")
+    box.hidden = false
+    fireShown()
+    T.eq(HandlerStack.active().name, "ShadowedTextPopup", "opens once the box is on screen")
+    T.truthy(spoken():find("Emancipation Proclamation", 1, true))
+    T.eq(#buffered(), 1)
+    fireShown()
+    T.eq(#buffered(), 1, "a later show does not reopen the menu")
+end
+
+function M.test_box_processed_before_showing_drops_the_message()
+    setup()
+    box.hidden = true
+    firePopup({ Type = TEXT_POPUP, Text = EVENT_TEXT })
+    fireProcessed(TEXT_POPUP)
+    box.hidden = false
+    fireShown()
+    T.eq(HandlerStack.active(), nil)
+end
+
+function M.test_close_with_no_box_on_screen_closes_the_menu()
+    setup()
+    pushMap()
+    firePopup({ Type = TEXT_POPUP, Text = EVENT_TEXT })
+    box.hidden = true
+    local menu = HandlerStack.active()
+    menu._items[1]:activate(menu)
+    T.eq(#dequeued, 0, "nothing to dequeue")
+    T.eq(HandlerStack.active().name, "Map", "no processed event will come, so Close closes the menu")
+end
+
+function M.test_esc_that_reaches_the_menu_closes_it()
+    setup()
+    pushMap()
+    firePopup({ Type = TEXT_POPUP, Text = EVENT_TEXT })
+    InputRouter.dispatch(Keys.VK_ESCAPE, 0, WM_KEYDOWN)
+    T.eq(HandlerStack.active().name, "Map", "the player is never stuck in the menu")
 end
 
 function M.test_alt_down_reviews_the_message_line_by_line()

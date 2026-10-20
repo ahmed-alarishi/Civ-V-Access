@@ -15,6 +15,15 @@
 -- the box's own button does. However the box closes, its hide reports the
 -- popup processed, and that closes the menu.
 --
+-- The box queues itself behind any popup already up (a chooser at turn start),
+-- so the menu waits until the box is actually on screen: opening on the
+-- message alone would put a menu that captures all input over the chooser the
+-- player is really looking at. The box announces its show with
+-- SerialEventGameMessagePopupShown, but passes nil for the popup info (its
+-- m_PopupInfo is never assigned), so the menu opens on any show that finds a
+-- message pending and the box visible. The box may also show inside its own
+-- popup listener, before ours runs, so the message listener checks too.
+--
 -- The message rides in on the same SerialEventGameMessagePopup the box itself
 -- listens to, and the box shows popupInfo.Text through LocalizeAndSetText, so
 -- the menu reads exactly what is on screen: Text.key resolves a TXT_KEY the
@@ -46,20 +55,38 @@ local function hookAlive()
     return alive == true
 end
 
+-- Text of the box's latest message, waiting for the box to show. Cleared when
+-- the menu opens and when the box reports itself processed.
+local _pending = nil
+
+local function lookUpBox()
+    return ContextPtr:LookUpControl(TEXT_POPUP_PATH)
+end
+
+local function boxShowing()
+    local box = lookUpBox()
+    return box ~= nil and not box:IsHidden()
+end
+
 local function closeBox()
-    local box = ContextPtr:LookUpControl(TEXT_POPUP_PATH)
+    local box = lookUpBox()
     if box == nil then
         Log.error("ShadowedTextPopupAnnounce: no " .. TEXT_POPUP_PATH .. " Context to close")
+        HandlerStack.removeByName(MENU_NAME, true)
+        return
+    end
+    if box:IsHidden() then
+        -- Nothing on screen to close, so no processed event will come to
+        -- close the menu: close it here.
+        HandlerStack.removeByName(MENU_NAME, true)
         return
     end
     UIManager:DequeuePopup(box)
 end
 
-function ShadowedTextPopupAnnounce._onPopup(popupInfo)
-    if popupInfo.Type ~= ButtonPopupTypes.BUTTONPOPUP_TEXT or hookAlive() then
-        return
-    end
-    local text = Text.key(popupInfo.Text)
+local function openMenu()
+    local text = _pending
+    _pending = nil
     MessageBuffer.append(text, "notification")
     HandlerStack.removeByName(MENU_NAME, false)
     local handler = BaseMenu.create({
@@ -76,6 +103,9 @@ function ShadowedTextPopupAnnounce._onPopup(popupInfo)
             }),
         },
         capturesAllInput = true,
+        -- The showing box takes Esc before this menu sees it. Esc only gets
+        -- here if the box is gone, and then nothing else will close the menu.
+        escapePops = true,
     })
     RewardReview.install(handler, function()
         return { text }
@@ -83,20 +113,45 @@ function ShadowedTextPopupAnnounce._onPopup(popupInfo)
     HandlerStack.push(handler)
 end
 
+function ShadowedTextPopupAnnounce._onPopup(popupInfo)
+    if popupInfo.Type ~= ButtonPopupTypes.BUTTONPOPUP_TEXT or hookAlive() then
+        return
+    end
+    _pending = Text.key(popupInfo.Text)
+    if boxShowing() then
+        openMenu()
+    end
+end
+
+function ShadowedTextPopupAnnounce._onPopupShown()
+    if _pending ~= nil and boxShowing() then
+        openMenu()
+    end
+end
+
 function ShadowedTextPopupAnnounce._onPopupProcessed(popupType)
     if popupType ~= ButtonPopupTypes.BUTTONPOPUP_TEXT then
         return
     end
+    _pending = nil
     HandlerStack.removeByName(MENU_NAME, true)
 end
 
 function ShadowedTextPopupAnnounce.install()
+    _pending = nil
     Log.installEvent(
         Events,
         "SerialEventGameMessagePopup",
         Log.safeListener("ShadowedTextPopupAnnounce", ShadowedTextPopupAnnounce._onPopup),
         "ShadowedTextPopupAnnounce",
         "shadowed text popups will be silent"
+    )
+    Log.installEvent(
+        Events,
+        "SerialEventGameMessagePopupShown",
+        Log.safeListener("ShadowedTextPopupAnnounce.shown", ShadowedTextPopupAnnounce._onPopupShown),
+        "ShadowedTextPopupAnnounce",
+        "a shadowed text popup that waited behind another popup will be silent"
     )
     Log.installEvent(
         Events,
