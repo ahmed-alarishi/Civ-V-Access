@@ -224,11 +224,12 @@ end
 -- scenario's own on-screen counter shows (the American Civil War map presets
 -- 50). Ordinary games carry a limit too, derived from the game speed when time
 -- victory is on, so the clause is gated to a loaded scenario with a real limit.
+-- Counted the way the engine ends the game and F8's turns row reads it.
 local function scenarioTurnsClause()
     if not PreGame.GetLoadWBScenario() or Game.GetMaxTurns() <= 0 then
         return nil
     end
-    local remaining = Game.GetEstimateEndTurn() - Game.GetGameTurn()
+    local remaining = Game.GetMaxTurns() - Game.GetElapsedGameTurns()
     if remaining < 0 then
         return nil
     end
@@ -254,22 +255,14 @@ local function turnLine()
     -- Maya calendar (Dlc_06 Babylon -> Maya scenario civ). Speak the long
     -- form because the screen shows a glyph, and the tooltip is the
     -- spoken-out long form of the date.
+    local maya = nil
     if player:IsUsingMayaCalendar() then
-        local maya = player:GetMayaCalendarString()
-        return joinClauses(
-            turn,
-            date,
-            maya,
-            scenarioTurnsClause(),
-            supplyClause(player),
-            shortageClause(player),
-            stillPlayingClause(),
-            timerClause()
-        )
+        maya = player:GetMayaCalendarString()
     end
     return joinClauses(
         turn,
         date,
+        maya,
         scenarioTurnsClause(),
         supplyClause(player),
         shortageClause(player),

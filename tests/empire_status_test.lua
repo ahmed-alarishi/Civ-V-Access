@@ -90,15 +90,16 @@ local function setup()
     end
     -- An ordinary game by default: no World Builder scenario, no turn limit.
     -- Scenario turn-line tests set a loaded scenario with its preset limit.
-    scenario = { loaded = false, maxTurns = 0, estimateEndTurn = 0 }
+    -- The game starts at turn 0, so elapsed turns equal the game turn.
+    scenario = { loaded = false, maxTurns = 0 }
     PreGame.GetLoadWBScenario = function()
         return scenario.loaded
     end
     Game.GetMaxTurns = function()
         return scenario.maxTurns
     end
-    Game.GetEstimateEndTurn = function()
-        return scenario.estimateEndTurn
+    Game.GetElapsedGameTurns = function()
+        return 47
     end
     Game.IsOption = function(opt)
         return options[opt] == true
@@ -420,13 +421,13 @@ end
 
 function M.test_turn_appends_scenario_turns_remaining()
     setup()
-    scenario = { loaded = true, maxTurns = 50, estimateEndTurn = 50 }
+    scenario = { loaded = true, maxTurns = 50 }
     T.eq(EmpireStatus._turnLine(), "Turn: 47, 1620 AD, 3 turns remaining")
 end
 
 function M.test_turn_scenario_turns_remaining_singular()
     setup()
-    scenario = { loaded = true, maxTurns = 50, estimateEndTurn = 48 }
+    scenario = { loaded = true, maxTurns = 48 }
     T.eq(EmpireStatus._turnLine(), "Turn: 47, 1620 AD, 1 turn remaining")
 end
 
@@ -434,13 +435,13 @@ end
 -- victory is on; only a scenario's limit is spoken.
 function M.test_turn_ordinary_game_limit_not_spoken()
     setup()
-    scenario = { loaded = false, maxTurns = 500, estimateEndTurn = 500 }
+    scenario = { loaded = false, maxTurns = 500 }
     T.eq(EmpireStatus._turnLine(), "Turn: 47, 1620 AD")
 end
 
 function M.test_turn_scenario_without_turn_limit_not_spoken()
     setup()
-    scenario = { loaded = true, maxTurns = 0, estimateEndTurn = 1000 }
+    scenario = { loaded = true, maxTurns = 0 }
     T.eq(EmpireStatus._turnLine(), "Turn: 47, 1620 AD")
 end
 

@@ -279,8 +279,8 @@ if Game.GetMaxTurns == nil then
         return 0
     end
 end
-if Game.GetEstimateEndTurn == nil then
-    Game.GetEstimateEndTurn = function()
+if Game.GetElapsedGameTurns == nil then
+    Game.GetElapsedGameTurns = function()
         return 0
     end
 end
