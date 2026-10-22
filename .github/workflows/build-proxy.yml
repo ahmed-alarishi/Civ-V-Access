@@ -1,0 +1,27 @@
+# Builds the Lua proxy DLL on a GitHub-hosted Windows runner, which ships
+# Visual Studio with the C++ x86 tools, so a proxy change can be tested
+# without a local compiler. This file lives only on the fork's ci/proxy-build
+# side branch and is never part of a pull request.
+name: Build proxy
+
+on:
+  push:
+    branches: [ci/proxy-build]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build lua51_Win32.dll
+        shell: pwsh
+        run: ./build-proxy.ps1
+
+      - name: Upload the DLL
+        uses: actions/upload-artifact@v4
+        with:
+          name: lua51_Win32
+          path: dist/proxy/lua51_Win32.dll
+          if-no-files-found: error
